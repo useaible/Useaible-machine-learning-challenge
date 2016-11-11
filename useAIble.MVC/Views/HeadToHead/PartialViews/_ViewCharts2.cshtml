@@ -1,0 +1,159 @@
+﻿<style>
+    /*.outer-chart-container{
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom:0;
+        left:0;
+        background: rgba(0, 0, 0, 0.24);
+        z-index: 3;
+        width: 100%;
+    }
+    .chart-container{
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background: #ffffff;
+        z-index: 4;
+        left: 0;
+        top: 80px;
+        right: 0;
+        bottom: 80px;
+        box-shadow: 0px 1px 13px 2px #000;
+    }
+    .inner-chart-container{
+        width: 100%;
+    }
+    .close-button{
+        position: absolute;
+        right: 20px;
+        z-index: 5;
+    }
+    .value-text{
+        font-size: 35px;
+        font-family: 'Lato', sans-serif;
+        line-height: 18px;
+    }
+    .label-header{
+        font-size: 16px;
+        font-family: 'Arvo', serif;
+          font-family: 'Lato', sans-serif;
+    }
+    .font-lato{
+        font-family: 'Lato', sans-serif;
+    }
+    .font-Arvo{
+        font-family: 'Lato', sans-serif;
+    }
+    .useaible-panel .value-text{
+        color: #ff6800;
+    }
+    .tensorflow-panel .value-text{
+        color: #a0a700;
+    }
+    .inner-chart-container .main-header{
+        font-size: 30px;
+    }
+    .inner-chart-container .panel .margin-bottom{
+        margin-bottom: 25px;
+        margin-bottom: 15px;
+    }
+    .main-header{
+        text-align: center;
+        font-family: 'Lato', sans-serif;
+        font-size: 50px;
+    }
+    .pager{
+        border: 1px solid #ffffff;
+        padding: 6px 14px 4px 14px;
+        background: #ff6800;
+        color: #ffffff;
+    }
+    .outer-chart-container{
+        display: none;
+    }*/
+</style>
+<div class="outer-chart-container">
+    <div class="inner-chart-container">
+        <div class="chart-container">
+            <div class="close-button">X</div>
+            <div id="example">
+                <h2 class="center-block main-header">Final Results.</h2>
+                <hr />
+                <div class="demo-section k-content wide">
+                    <div id="chart" style="background: center"></div>
+                    <span class="pager" style="float: left;cursor:pointer;" data-bind="click: PreviousChartPage">Previous Page</span><span class="pager" style="float: right;cursor:pointer;" data-bind="click: NextChartPage">Next Page</span>
+                </div>
+                <hr />
+                <div class="rowx">
+                    <div class="col-md-4"></div>
+                    <div class="col-md-4">
+                        <div class="col-md-6  col-sm-6" data-bind="visible: useAIbleSimulator().SelectedPlayerOption().Name == 'Head-To-Head' || useAIbleSimulator().SelectedPlayerOption().Name == 'useAIble'">
+                            <div class="panel panel-danger useaible-panel">
+                                <div class="panel-heading warning">
+                                    <div class="font-lato">UseAIble AI</div>
+                                </div>
+                                <div class="panel-body">
+                                    <div class="margin-bottom">
+                                        <div><span class="label-header">Average Score:</span></div>
+                                        <div><span class="value-text" data-bind="text: useAIbleAvgScore"></span></div>
+                                    </div>
+                                    <div class="margin-bottom">
+                                        <div><span class="label-header">Highest Score:</span></div>
+                                        <div><span class="value-text" data-bind="text: useAIbleHighestScore"></span></div>
+                                    </div>
+                                    <div class="margin-bottom">
+                                        <div><span class="label-header">Learned after Session:</span></div>
+                                        <div><span class="value-text" data-bind="text: useAIbleLearnedAfter"></span></div>
+                                    </div>
+                                    @*<h3><span class="label-header">Average Score:</span><span class="value-text">5000</span></h3>
+                                    <h3><span class="label-header">Highest Score: </span><span class="value-text">2000</span></h3>
+                                    <h3><span class="label-header">Learned after Session:</span> <span class="value-text"> 50</span></h3>*@
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6  col-sm-6" data-bind="visible: useAIbleSimulator().SelectedPlayerOption().Name == 'Head-To-Head' || useAIbleSimulator().SelectedPlayerOption().Name == 'Tensor Flow'">
+                            <div class="panel panel-success tensorflow-panel">
+                                <div class="panel-heading">
+                                    <div class="font-lato">Tensor Flow</div>
+                                </div>
+                                <div class="panel-body">
+                                    <div class="margin-bottom">
+                                        <div><span class="label-header">Average Score:</span></div>
+                                        <div><span class="value-text" data-bind="text: TensorFlowAvgScore"></span></div>
+                                    </div>
+                                    <div class="margin-bottom">
+                                        <div><span class="label-header">Highest Score:</span></div>
+                                        <div><span class="value-text" data-bind="text: TensorFlowHighestScore"></span></div>
+                                    </div>
+                                    <div class="margin-bottom">
+                                        <div><span class="label-header">Learned after Session:</span></div>
+                                        <div><span class="value-text" data-bind="text: TensorFlowLearnedAfter"></span></div>
+                                    </div>
+                                    @*<h3><span class="label-header">Average Score:</span> <span class="value-text">6000</span></h3>
+                                    <h3><span class="label-header">Highest Score:</span> <span class="value-text">2000</span></h3>
+                                    <h3><span class="label-header">Learned after Session: </span><span class="value-text">30</span></h3>*@
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3"></div>
+                </div>
+
+                @*<div class="pnale">
+                    <div class="panel-container">
+   
+                    </div>
+                </div>*@
+                <script>
+                    //$(document).ready(createChart);
+                    //$(document).bind("kendo:skinChange", createChart);
+                    $(".outer-chart-container").on("click", function () {
+                        $(".outer-chart-container").fadeOut();
+                    })
+                </script>
+            </div>
+
+        </div>
+    </div>
+</div>

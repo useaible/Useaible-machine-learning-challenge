@@ -1,0 +1,109 @@
+﻿<div class="outer-chart-container">
+    <div class="inner-chart-container">
+        <div class="chart-container">
+            @*<div class="close-button">X</div>*@
+            <div id="example">
+                @*<h2 class="center-block main-header">Game Summary Chart</h2>*@
+                <hr />
+                <div class="demo-section k-content wide">
+                    <div id="chart" style="background: center"></div>
+                    <span class="pager" style="float: left;cursor:pointer;" data-bind="click: PreviousChartPage, visible: NUMBER_OF_CHART_POINTS() > 100">Previous Page</span>
+                    <span class="pager" style="float: right;cursor:pointer;" data-bind="click: NextChartPage, visible: NUMBER_OF_CHART_POINTS() > 100">Next Page</span>
+                </div>
+                <hr />
+                <div class="rowx">
+                    <div class="col-md-4"></div>
+                    <div class="col-md-4">
+                        <div class="col-md-6  col-sm-6" data-bind="visible: useAIbleSelected">
+                            <div class="panel panel-danger useaible-panel">
+                                <div class="panel-heading warning">
+                                    <div class="font-lato">UseAIble AI</div>
+                                </div>
+                                <div class="panel-body">
+                                    <div class="margin-bottom">
+                                        <div><span class="label-header">Average Score:</span></div>
+                                        <div><span class="value-text" data-bind="text: useAIbleAvgScore"></span></div>
+                                    </div>
+                                    <div class="margin-bottom">
+                                        <div><span class="label-header">Highest Score:</span></div>
+                                        <div><span class="value-text" data-bind="text: useAIbleHighestScore"></span></div>
+                                    </div>
+                                    <div class="margin-bottom">
+                                        <div><span class="label-header" data-bind="text: IsLogistic()? 'Lowest Cost:' : 'Learned After:'">Learned after Session:</span></div>
+                                        <div><span class="value-text" data-bind="text: useAIbleLearnedAfter"></span></div>
+                                    </div>
+                                    @*<h3><span class="label-header">Average Score:</span><span class="value-text">5000</span></h3>
+                                    <h3><span class="label-header">Highest Score: </span><span class="value-text">2000</span></h3>
+                                    <h3><span class="label-header">Learned after Session:</span> <span class="value-text"> 50</span></h3>*@
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6  col-sm-6" data-bind="visible: TensorflowSelected">
+                            <div class="panel panel-success tensorflow-panel">
+                                <div class="panel-heading">
+                                    <div class="font-lato">Tensor Flow</div>
+                                </div>
+                                <div class="panel-body">
+                                    <div class="margin-bottom">
+                                        <div><span class="label-header">Average Score:</span></div>
+                                        <div><span class="value-text" data-bind="text: TensorFlowAvgScore"></span></div>
+                                    </div>
+                                    <div class="margin-bottom">
+                                        <div><span class="label-header">Highest Score:</span></div>
+                                        <div><span class="value-text" data-bind="text: TensorFlowHighestScore"></span></div>
+                                    </div>
+                                    <div class="margin-bottom">
+                                        <div><span class="label-header" data-bind="text: IsLogistic()? 'Lowest Cost:' : 'Learned After:'">Learned after Session:</span></div>
+                                        <div><span class="value-text" data-bind="text: TensorFlowLearnedAfter"></span></div>
+                                    </div>
+                                    @*<h3><span class="label-header">Average Score:</span> <span class="value-text">6000</span></h3>
+                                    <h3><span class="label-header">Highest Score:</span> <span class="value-text">2000</span></h3>
+                                    <h3><span class="label-header">Learned after Session: </span><span class="value-text">30</span></h3>*@
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6  col-sm-6" data-bind="visible: EncogSelected">
+                            <div class="panel panel-success tensorflow-panel">
+                                <div class="panel-heading">
+                                    <div class="font-lato">Encog</div>
+                                </div>
+                                <div class="panel-body">
+                                    <div class="margin-bottom">
+                                        <div><span class="label-header">Average Score:</span></div>
+                                        <div><span class="value-text" data-bind="text: EncogAvgScore"></span></div>
+                                    </div>
+                                    <div class="margin-bottom">
+                                        <div><span class="label-header">Highest Score:</span></div>
+                                        <div><span class="value-text" data-bind="text: EncogHighestScore"></span></div>
+                                    </div>
+                                    <div class="margin-bottom">
+                                        <div><span class="label-header" data-bind="text: IsLogistic()? 'Lowest Cost:' : 'Learned After:'">Learned after Session:</span></div>
+                                        <div><span class="value-text" data-bind="text: EncogLearnedAfter"></span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3"></div>
+                </div>
+
+                @*<div class="pnale">
+                    <div class="panel-container">
+   
+                    </div>
+                </div>*@
+                <script>
+                    //$(document).ready(createChart);
+                    //$(document).bind("kendo:skinChange", createChart);
+                    $(".outer-chart-container").on("click", function () {
+                        $(".outer-chart-container").fadeOut();
+                    })
+                </script>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+@*<script src="~/Scripts/Game/game-chart.js"></script>*@

@@ -1,0 +1,13 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Unauthorized";
+}
+
+<div>
+    <span style="color: indianred; font-size: large">
+        <strong>Unauthorized (401):</strong> You are not authorized to view this page.
+    </span>
+    <br />
+    <br />
+    Go back to @Html.ActionLink("homepage", "index", "home")
+</div>

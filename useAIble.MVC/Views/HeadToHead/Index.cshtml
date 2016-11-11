@@ -1,0 +1,150 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_AiProjects.cshtml";
+}
+<style>
+    #index-page .panel .panel-body img{
+        /*width: 100%;
+        height: 288px;*/
+        display: block;
+        max-width: 100%;
+        height: auto;
+    }
+    #index-page .panel .panel-body .thumbnail{
+        margin: -15px;
+        border-radius: 0;
+        border: 0;
+        padding: 0;
+        /*height: 287px;*/
+    }
+    #index-page .panel {
+        border-radius: initial;
+        border: 1px solid #c2c2c2;
+    }
+    #index-page .panel:hover {
+        text-decoration:none;
+    }
+    #index-page .panel p{
+	    line-height: 12px;
+	    color: #fff;
+	    font-size: 11px;
+    }
+    #index-page .panel label{
+        font-weight: bold;
+        font-size: 20px;
+        color: #f69f69;
+    }
+    #index-page .overlap-container{
+        height: 89px;
+        background: RGBA(2, 0, 0, 0.63);
+        position: relative;
+        color: #ffffff;
+        margin: 0 -15px;
+        margin-top: -99px;
+        margin-top: -89px;
+        /*margin-bottom: 17px;*/
+        padding: 0 18px;
+        overflow: hidden;
+    }
+    #index-page .panel-footer{
+        padding: 0px 15px 0px;
+    }
+</style>
+
+<div class="container-fluidx" id="index-page">
+    <div class="row">
+       <div class="col-md-12">
+           insert coin here!
+       </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6 col-md-5 col-lg-2">
+            <div class="panel">
+                <a href="@Url.Action("lunarlander")">
+                    <div class="panel-body">
+                        <div class="thumbnail ">
+                            <img src="~/Content/img/AiProjects/index/lunarLander.gif" />
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <div class="overlap-container">
+                            <label>
+                                Lunar Lander
+                            </label>
+                            <div>
+                                  
+                            </div>
+                            <p>Play Lunar Lander game as Human or AI.</p>
+                        </div>
+                        @*<div class="btn btn-primary">Open Game</div>
+                        <div class="btn btn-danger">More Info</div>*@
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-5 col-lg-2">
+            <a href="@Url.Action("maze")">
+                <div class="panel">
+                    <div class="panel-body">
+                        <div class="thumbnail ">
+                            <img src="~/Content/img/AiProjects/index/maze.gif" />
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <div class="overlap-container">
+                            <label>
+                                Maze
+                            </label>
+                            <p>Play  Maze as Human or AI.</p>
+                        </div>
+                        @*<div class="btn btn-primary">Open Game</div>
+                        <div class="btn btn-danger">More Info</div>*@
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-sm-6 col-md-5 col-lg-2">
+            <a href="@Url.Action("logisticssimulation")">
+                <div class="panel">
+                    <div class="panel-body">
+                        <div class="thumbnail ">
+                            <img src="~/Content/img/AiProjects/LogisticsSimulations/LogisticsSimulation.gif" />
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <div class="overlap-container">
+                            <label>
+                                Logistics Simulation
+                            </label>
+                            <p>Play  Simulator as Human or AI.</p>
+                        </div>
+                        @*<div class="btn btn-primary">Open Game</div>
+                        <div class="btn btn-danger">More Info</div>*@
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-sm-6 col-md-5 col-lg-2">
+            <a href="">
+                <div class="panel" style="opacity: 0.5; cursor: not-allowed;">
+                    <div class="panel-body">
+                        <div class="thumbnail ">
+                            <img src="~/Content/img/AiProjects/index/PlanogramGame.jpg" />
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <div class="overlap-container">
+                            <label>
+                                Planogram Builder
+                            </label>
+                            <p>Coming Soon</p>
+                        </div>
+                        @*<div class="btn btn-primary">Open Game</div>
+                        <div class="btn btn-danger">More Info</div>*@
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>

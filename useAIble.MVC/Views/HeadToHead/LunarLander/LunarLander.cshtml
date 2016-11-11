@@ -1,0 +1,86 @@
+﻿
+@{
+    ViewBag.Title = "LunarLander";
+    Layout = "~/Views/Shared/_AiProjects.cshtml";
+}
+
+<input id="selected-player-hidden-input-lander" type="hidden" data-bind="value: SelectedPlayerOption().Name" />
+<input id="selected-head2head-options-hidden-input-lander" type="hidden" data-bind="value: SelectedHeadToHeadOption()? SelectedHeadToHeadOption().Id : ''" />
+<div class="game-container" id="main">
+    @Html.Partial("PartialViews/_ViewCharts")
+    <div class="row">
+        <div class="container-fluidx">
+            <div data-bind="attr: {class: gameContainer}">
+                <div class="col-md-3 sidebarPanel">
+                    <div class="panel panel-primary  k-content">
+                        @Html.Partial("PartialViews/_SideBar")   
+                    </div>
+                </div>
+                <div class="col-md-6 canvasContainer" data-bind="foreach: Games">
+                    <canvas data-bind="attr: { id: Id, class: 'lunarLander',  }">Canvas not supported</canvas>
+                </div>
+                <div class="col-md-3 sessionContainer" style="">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <span><i class="fa fa-list-ol" aria-hidden="true"></i></span> Session Data
+                        </div>
+                        <div class="body-body table-container">
+                            @Html.Partial("PartialViews/LunarLander/_SessionsTab")
+                        </div>
+                    </div>
+                    <div class="h6" data-bind="with: SelectedPlayerOption">
+                        <div id="mainWaitingDiv" data-bind="visible: Name != 'Head-To-Head'">
+                            <div data-bind="visible: $root.DonePlaying() == false">
+                                <label>Waiting Results</label><br />
+                                <label>Session:</label> <span data-bind="text: $root.SessionWaitText"></span><br />
+                                <label>Time Elapse:</label> <span data-bind="text: $root.WaitTimeElapse"></span>
+                                <div class="progress progress-striped active">
+                                    <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @*<div data-bind="visible: EnableStartButton() == false, progress: { value: 100, type: 'info', text: SessionWaitText, textHidden: true, animated: true, striped: true }"></div>*@
+                </div>
+            </div>
+            <div data-bind="visible: headTohead, attr: {class: gameContainer}">
+                <div class="col-md-3 newSideBar ">
+                    @Html.Partial("PartialViews/_SideBar2")
+                </div>
+                <div class="col-md-6 newCavas canvasContainer">
+                </div>
+                <div class="col-md-3 newSessionData">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*<script src="~/Scripts/knockout-kendo.min.js"></script>*@
+<script src="~/Scripts/notify.js"></script>
+<script src="~/Scripts/Repositories/DRNNRepository.js"></script>
+<script src="~/Scripts/Game/LunarLander/Models/CreateNetworkParams.js"></script>
+<script src="~/Scripts/Game/LunarLander/Models/RNNIOParams.js"></script>
+<script src="~/Scripts/Game/LunarLander/Models/RNetworkSettingsParams.js"></script>
+<script src="~/Scripts/Game/LunarLander/Models/RNNIOWithValuesParams.js"></script>
+<script src="~/Scripts/Game/LunarLander/Models/RunCycleParams.js"></script>
+<script src="~/Scripts/Game/LunarLander/Models/CycleOutputParams.js"></script>
+<script src="~/Scripts/Game/LunarLander/Models/ScoreCycleParams.js"></script>
+<script src="~/Scripts/Game/LunarLander/Models/SessionEndParams.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
+<script src="~/Scripts/Game/LunarLander/Models/RNNCoreSettings.js"></script>
+<script src="~/Scripts/Game/LunarLander/MQSimulator.js"></script>
+<script src="~/Scripts/Game/LunarLander/EncogLunarLander.js"></script>
+<script src="~/Scripts/Game/LunarLander/Simulator.js"></script>
+<script src="~/Scripts/Game/LunarLander/SimulatorTFlow.js"></script>
+<script src="~/Scripts/Game/LunarLander/Models/MultiRandomnessVM.js"></script>
+<script src="~/Scripts/Game/ViewCharts.js"></script>
+<script src="~/Scripts/Game/LogisticSimulation/Models/HiddenLayerNeuronVM.js"></script>
+<script src="~/Scripts/Game/LunarLander/game.js"></script>
+@*<script src="~/Scripts/Game/AIProjects.js"></script>*@
+@*<script src="~/Scripts/Game/LunarLander/lunarLander.js"></script>*@
+<script>
+
+</script>
+

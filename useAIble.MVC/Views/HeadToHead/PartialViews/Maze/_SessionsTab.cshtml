@@ -1,0 +1,91 @@
+﻿
+<button class="btn btn-info full-width view-chart margin-bottom" data-bind="visible: ShowChartBtn" style="margin-top: 20px;">View Chart</button>
+<table id="session-scores-table" data-bind="visible: SelectedPlayerOption().Name != 'Head-To-Head'" class="table table-responsive">
+    <thead>
+        <tr>
+            <th>Status</th>
+            <th>Session</th>
+            <th>Score</th>
+        </tr>
+    </thead>
+    <tbody data-bind="foreach: SessionData">
+        <tr>
+            <td><span data-bind="html: Icon"></span></td>
+            <td data-bind="text: Id"></td>
+            <td data-bind="text: Score"></td>
+        </tr>
+    </tbody>
+</table>
+<div data-bind="visible: SelectedPlayerOption().Name == 'Head-To-Head'" >
+
+    <table class="table table-responsive">
+        <caption>useAIble</caption>
+        <thead>
+            <tr>
+                <th>Status</th>
+                <th>Session</th>
+                <th>Score</th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: SessionData">
+            <!--ko if: Type() == 'useAIble'-->
+            <tr>
+                <td><span data-bind="html: Icon"></span></td>
+                <td data-bind="text: Id"></td>
+                <td data-bind="text: Score"></td>
+            </tr>
+            <!--/ko-->
+        </tbody>
+    </table>
+
+    <div class="secondSessionContainer" id="head-to-head-maze-container">
+
+        <div id="tensorflow-table-container-maze">
+            <table data-bind="visible: TensorflowSelected" id="tensorflow-table-maze" class="table table-responsive tensorflow-table-maze">
+                @*<caption>Tensor Flow</caption>*@
+                <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>Session</th>
+                        <th>Score</th>
+                    </tr>
+                </thead>
+                <tbody data-bind="foreach: SessionData">
+                    <!--ko if: Type() == 'tensorFlow'-->
+                    <tr>
+                        <td><span data-bind="html: Icon"></span></td>
+                        <td data-bind="text: Id"></td>
+                        <td data-bind="text: Score"></td>
+                    </tr>
+                    <!--/ko-->
+                </tbody>
+            </table>
+        </div>
+
+        <div id="encog-table-container-maze">
+            <table data-bind="visible: EncogSelected" id="encog-table-maze" class="table table-responsive encog-table-maze">
+                <caption>Encog</caption>
+                <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>Session</th>
+                        <th>Score</th>
+                    </tr>
+                </thead>
+                <tbody data-bind="foreach: SessionData">
+                    <!--ko if: Type() == 'encog'-->
+                    <tr>
+                        <td><span data-bind="html: Icon"></span></td>
+                        <td data-bind="text: Id"></td>
+                        <td data-bind="text: Score"></td>
+                    </tr>
+                    <!--/ko-->
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+</div>
+
+<script></script>

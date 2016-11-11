@@ -1,0 +1,107 @@
+﻿@*<div data-bind="with: SelectedPlayerOption">
+        <table data-bind="visible: Name == 'useAIble' || Name == 'Tensor Flow'" class="table table-hover" style="background: #ffffff">
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Session</th>
+                    <th>Score</th>
+                </tr>
+            </thead>
+            <tbody data-bind="foreach: $root.GameQueue">
+                <tr>
+                    <td data-bind="html: Icon"></td>
+                    <td data-bind="text: Session"></td>
+                    <td data-bind="text: Score"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>*@
+
+<script></script>
+<button class="btn btn-info full-width view-chart margin-bottom" data-bind="visible: ShowChartBtn" style="margin-top: 20px;">View Chart</button>
+<div data-bind="with: SelectedPlayerOption">
+    <table data-bind="visible: Name == 'useAIble' || Name == 'Tensor Flow' || Name == 'Encog'" class="table table-hover" style="background: #ffffff">
+        @*<caption><span class="alert-info pull-left" id="nextSessionLabel"></span></caption>*@
+        <thead>
+            <tr>
+                <th>Status</th>
+                <th>Session</th>
+                <th>Score</th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: $root.GameQueue">
+            <tr>
+                <td data-bind="html: Icon"></td>
+                <td data-bind="text: Session"></td>
+                <td data-bind="text: Score"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- ko if: Name == 'Head-To-Head'-->
+    <table class="table table-hover" style="background: #ffffff">
+        @*<caption>useAIble</caption>*@
+        <thead>
+            <tr>
+                <th>Status</th>
+                <th>Session</th>
+                <th>Score</th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: $root.GameQueue">
+            <!-- ko if: Type() == 'useAIble'-->
+            <tr>
+                <td data-bind="html: Icon"></td>
+                <td data-bind="text: Session"></td>
+                <td data-bind="text: Score"></td>
+            </tr>
+            <!--/ko-->
+        </tbody>
+    </table>
+    <div id="useAibleWaitingDiv" data-bind="visible: $root.useAIbleDonePlaying() == false">
+        <label>Waiting Results</label><br />
+        <label>Session:</label> <span data-bind="text: $root.SessionWaitTextUseAible"></span><br />
+        <label>Time Elapse:</label> <span data-bind="text: $root.WaitTimeElapseUseAible"></span>
+        <div class="progress progress-striped active">
+            <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+            </div>
+        </div>
+    </div>
+    @*<div class="tensorflowTable">
+            <table class="table table-hover" style="background: #ffffff">
+                <caption>Tensor Flow</caption>
+                <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>Session</th>
+                        <th>Score</th>
+                    </tr>
+                </thead>
+                <tbody data-bind="foreach: $root.GameQueue">
+                    <!-- ko if: Type() == 'tensorFlow'-->
+                    <tr>
+                        <td data-bind="html: Icon"></td>
+                        <td data-bind="text: Session"></td>
+                        <td data-bind="text: Score"></td>
+                    </tr>
+                    <!--/ko-->
+                </tbody>
+            </table>
+            <div data-bind="visible: $root.TensorFlowDonePlaying() == false">
+                <label>Waiting Results</label><br />
+                <label>Session:</label> <span data-bind="text: $root.SessionWaitTextTF"></span><br />
+                <label>Time Elapse:</label> <span data-bind="text: $root.WaitTimeElapseTF"></span>
+                <div class="progress progress-striped active">
+                    <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+                    </div>
+                </div>
+            </div>
+        </div>*@
+    <!--/ko-->
+</div>
+<script>
+    $(function () {
+
+    });
+
+</script>

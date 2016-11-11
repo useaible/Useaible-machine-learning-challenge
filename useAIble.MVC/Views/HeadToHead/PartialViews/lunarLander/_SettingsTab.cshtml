@@ -1,0 +1,322 @@
+﻿<script></script>
+@*<h3>Initialize Lunar Lander Position</h3>*@
+<div class="row">
+    <div class="col-md-6">
+        <label class="input-label">Starting Altitude</label>
+        <select class="new-panels margin-bottom" data-bind="enable: true, options: AltitudeOptions, optionsText: 'Name', optionsValue: 'Value', value: SelectAltitude"></select>
+        @*<select class="new-panels margin-bottom" data-bind="enable: EnableStartButton, options: AltitudeOptions, optionsText: 'Name', optionsValue: 'Value', value: SelectAltitude"></select>*@
+    </div>
+    <div class="col-md-6">
+        <label class="input-label">Starting Fuel</label>
+        <select class="new-panels margin-bottom" data-bind="enable: true, options: FuelOptions, value: SelectFuel"></select>
+        @*<select class="new-panels margin-bottom" data-bind="enable: EnableStartButton, options: FuelOptions, value: SelectFuel"></select>*@
+    </div>
+</div>
+<button class="btn btn-info full-width" data-bind="enable: true, click: initialize">Initialize</button>
+@*<button class="btn btn-info full-width" data-bind="enable: EnableStartButton, click: initialize">Initialize</button>*@
+
+@*<h4 class="input-label">Starting Altitude</h4>
+    <select class="new-panels margin-bottom" data-bind="enable: true, options: AltitudeOptions, optionsText: 'Name', optionsValue: 'Value', value: SelectAltitude"></select>
+    <h4 class="input-label">Starting Fuel</h4>
+    <select class="new-panels margin-bottom" data-bind="enable: true, options: FuelOptions, value: SelectFuel"></select>
+    <button class="btn btn-info full-width" data-bind="enable: true, click: initialize">Initialize</button>*@
+<hr />
+@*<h3>Player</h3>*@
+<label class="input-label">Select a Player</label>
+<select class="new-panels margin-bottom" data-bind="enable: true, options: PlayerOptions,
+                        optionsText: 'Name',
+                        value: SelectedPlayerOption,
+                        optionsCaption: 'Select...'"></select>
+
+<label data-bind="visible: ShowHeadToHeadOptions" class="input-label">Head-To-Head Options <span id="player-error" style="color:orange;font-size:11px;"></span></label>
+<select id="head2head-option-dropdown" class="new-panels margin-bottom" data-bind="visible: ShowHeadToHeadOptions, enable: true, options: HeadToHeadOptions,
+                        optionsText: 'Name',
+                        value: SelectedHeadToHeadOption,
+                        optionsCaption: 'Select...'"></select>
+
+<div class="btn-group btn-group-justified margin-bottom">
+    <a href="#" class="btn btn-primary" data-bind="click: StartGame, enable: true"><span data-toggle="tooltip" data-placement="top" title="Play"><i class="fa fa-play" aria-hidden="true"></i></span></a>
+    @*<a href="#" class="btn btn-primary" data-bind="click: StartGame, enable: EnableStartButton"><i class="fa fa-play" aria-hidden="true"></i></a>*@
+    <a href="#" class="btn btn-primary" data-bind="click: ResetGame, visible: SelectedPlayerOption().Name == 'Human'"><span data-toggle="tooltip" data-placement="top" title="Stop"><i class="fa fa-stop" aria-hidden="true" data-bind="click: ResetGame"></i></span></a>
+    @*<a href="#" class="btn btn-primary" data-bind="click: ResetGame"><i class="fa fa-stop" aria-hidden="true" data-bind="click: ResetGame"></i></a>*@
+    <a href="#" class="btn btn-primary" data-bind="click: MuteGame, text: MuteText"><i class="fa fa-volume-up" aria-hidden="true" data-bind="click: MuteGame, text: MuteText"></i></a>
+    @*<a href="#" class="btn btn-primary" data-bind="click: MuteGame, text: MuteText"><i class="fa fa-volume-up" aria-hidden="true" data-bind="click: MuteGame, text: MuteText"></i></a>*@
+</div>
+
+<button class="btn btn-info full-width margin-bottom" data-bind="click: TfPlayGame, visible: ReplayButton() && SelectedPlayerOption().Name != 'Head-To-Head'? true : false, enable: true">Play Game</button>
+<button class="btn btn-info full-width margin-bottom" data-bind="click: TfPlayGame.bind($root, 'useAIble'), visible: ReplayButton() && SelectedPlayerOption().Name == 'Head-To-Head'? true: false, enable: true">Play Game</button>
+
+@*<button class="btn btn-danger full-width margin-bottom start-button" data-bind="click: StartGame, enable: true">Start</button>
+    <button class="btn btn-info full-width margin-bottom" data-bind="click: ResetGame, visible: SelectedPlayerOption().Name == 'Human'">Stop</button>
+    <button class="btn btn-info full-width margin-bottom" data-bind="click: TfPlayGame, visible: ReplayButton, enable: true">Play Game</button>
+    <button class="btn btn-info full-width margin-bottom" data-bind="click: MuteGame, text: MuteText">Mute</button>*@
+
+<hr />
+
+<h3>Settings</h3>
+
+
+<div data-bind="with: SelectedPlayerOption().Name  == 'useAIble' || SelectedPlayerOption().Name == 'Tensor Flow' || SelectedPlayerOption().Name == 'Encog' ||  SelectedPlayerOption().Name == 'Head-To-Head'">
+    <label class="input-label">Speed Setting:</label>
+    <select class="new-panels margin-bottom" data-bind="options: $root.SpeedOptions,
+            optionsText: 'Text',
+            value: $root.Speed,
+            optionsCaption: 'Select...'"></select>
+</div>
+
+<div data-bind="visible: useAIbleSelected() || TensorflowSelected()">
+    <label class="input-label" for="sessionInput">Sessions:</label>
+    <div class="row">
+        <div class="col-md-12">
+            <label class="sub-label">range:  1 - 50000</label>
+            <input type="text" id="sessionInput" class="new-panels margin-bottom" data-bind="value: NumberOfSessions, valueUpdate: 'keyup', enable: true">
+            <div id="sessionSlider" class="margin-bottom" data-bind="slider:{ range: 'min', step: 1, value: NumberOfSessions, realtime: true, min: 0, max: 50000  }"></div>
+            @*<div id="sessionSlider" class="margin-bottom" data-bind="visible: DonePlaying"></div>*@
+        </div>
+    </div>
+</div>
+
+<div class="tensor-flow-container">
+
+</div>
+<div data-bind="visible: SelectedPlayerOption().Name == 'useAIble' || SelectedPlayerOption().Name == 'Head-To-Head'">
+    <div class="form-group square-group">
+        <div class="panel-heading">
+            useAIble Settings
+        </div>
+        <div>
+            <label class="input-label">Number of Session Randomness</label>
+            <div>
+                <span id="multiSettingsErr" class="h6" style="color: orange;"></span>
+                <input type="text" id="sessionRandomnessInput" data-bind="value: NumSessionRandomness, valueUpdate: 'keyup', enable: true" class="new-panels margin-bottom" />
+            </div>
+            @*<div id="sessionRandomnessSlider" class="margin-bottom" data-bind="visible: DonePlaying"></div>*@
+            <div id="sessionRandomnessSlider" class="margin-bottom" data-bind="slider:{ range: 'min', step: 1, value: NumSessionRandomness, realtime: true, min: 0, max: NumberOfSessions  }"></div>
+        </div>
+
+        <label class="input-label" for="linearBracketInput">Linear Bracket:</label>
+        <div class="row margin-bottom">
+            <div class="col-md-6">
+                <label class="sub-label">Min: 0</label>
+                <input type="text" id="linearBracketInput" style="display:inline-block; width: 100%;" data-bind="value:  MinLinearBracket, valueUpdate: 'keyup', enable: true">
+            </div>
+            <div class="col-md-6">
+                <label class="sub-label">Max: 100</label>
+                <input type="text" id="linearBracketInput2" style="display:inline-block; width: 100%;" data-bind="value: MaxLinearBracket, valueUpdate: 'keyup', enable: true">
+            </div>
+        </div>
+        @*<div class="margin-bottom" id="linearBracketSlide" data-bind="visible: DonePlaying"></div>*@
+        <div class="margin-bottom" id="linearBracketSlide" data-bind="slider: { values: LinearBrackets, realtime: true }"></div>
+
+        <label class="input-label" for="RandomnessInput">Randomness:</label>
+        <div class="row margin-bottom">
+            <div class="col-md-6">
+                <label class="sub-label">Starting: 100%</label>
+                <input type="text" id="RandomnessInput" style="display:inline-block; width: 100%;" data-bind="value: StartRandomness, valueUpdate: 'keyup', enable: true">
+            </div>
+            <div class="col-md-6">
+                <label class="sub-label">Ending: 0%</label>
+                <input type="text" id="RandomnessInput2" style="display:inline-block; width: 100%;" data-bind="value: EndRandomness, valueUpdate: 'keyup', enable: true">
+            </div>
+        </div>
+        <div class="margin-bottom" id="RandomnessSlider" data-bind="slider: { values: Randomness, realtime: true }"></div>
+        @*<div class="margin-bottom" id="RandomnessSlider" data-bind="visible: DonePlaying"></div>*@
+
+        <div>
+            <div class="row">
+                <div class="col-md-6"></div>
+                <div class="col-md-6">
+                    <button class="btn btn-info full-width margin-bottom" data-bind="click: AddSettings">+ Add</button>
+
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="compressed-table">
+                        <table class="table table-striped table-bordered table-hover table-condensed">
+                            <thead>
+                                <tr>
+                                    <th>No.</th>
+                                    <th>Start Session Randomness</th>
+                                    <th>End Session Randomness</th>
+                                    <th>Min Linear Bracket</th>
+                                    <th>Max Linear Bracket</th>
+                                    <th>Start Randomness</th>
+                                    <th>End Randomness</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody data-bind="foreach: NetworkSettings">
+                                <tr>
+                                    <td data-bind="text: Id"></td>
+                                    <td data-bind="text: StartSessionRandomness"></td>
+                                    <td data-bind="text: EndSessionRandomness"></td>
+                                    <td data-bind="text: MinLinear"></td>
+                                    <td data-bind="text: MaxLinear"></td>
+                                    <td data-bind="text: StartRandomness"></td>
+                                    <td data-bind="text: EndRandomness"></td>
+                                    <td style="cursor:pointer;" data-bind="click: $root.RemoveSettings">X</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div id="tensorflow-settings-container-lander">
+    <div id="tensorflow-settings-lander" data-bind="visible: TensorflowSelected ">
+        <div class="form-group square-group">
+            <div class="panel-heading">
+                Tensor Flow Settings
+            </div>
+            <div>
+                <label class="input-label">Random Action Prob</label>
+                <div>
+                    <input type="text" id="random-action-prob-txt" data-bind="value: RandomActionProb, valueUpdate: 'keyup', enable: true" class="new-panels margin-bottom" />
+                </div>
+                <div id="random-action-prob-slider" class="margin-bottom" data-bind="slider:{ range: 'min', step: 0.01, value: RandomActionProb, realtime: true, min: 0, max: 1  }, visible: DonePlaying"></div>
+            </div>
+            <div>
+                <label class="input-label">Random Action Decay</label>
+                <div>
+                    <input type="text" id="random-action-decay-txt" data-bind="value: RandomActionDecay, valueUpdate: 'keyup', enable: true" class="new-panels margin-bottom" />
+                </div>
+                <div id="random-action-decay-slider" class="margin-bottom" data-bind="slider:{ range: 'min', step: 0.01, value: RandomActionDecay, realtime: true, min: 0, max: 1  }, visible: DonePlaying"></div>
+            </div>
+            <div>
+                <label class="input-label">Hidden1 Size</label>
+                <div>
+                    <input type="text" id="hidden1-size-txt" data-bind="value: Hidden1Size, valueUpdate: 'keyup', enable: true" class="new-panels margin-bottom" />
+                </div>
+                <div id="hidden1-size-slider" class="margin-bottom" data-bind="slider:{ range: 'min', step: 1, value: Hidden1Size, realtime: true, min: 0, max: 2000  }, visible: DonePlaying"></div>
+            </div>
+            <div>
+                <label class="input-label">Hidden2 Size</label>
+                <div>
+                    <input type="text" id="hidden2-size-txt" data-bind="value: Hidden2Size, valueUpdate: 'keyup', enable: true" class="new-panels margin-bottom" />
+                </div>
+                <div id="hidden2-size-slider" class="margin-bottom" data-bind="slider:{ range: 'min', step: 1, value: Hidden2Size, realtime: true, min: 0, max: 2000  }, visible: DonePlaying"></div>
+            </div>
+            <div>
+                <label class="input-label">Learning Rate</label>
+                <div>
+                    <input type="text" id="learning-rate-txt" data-bind="value: LearningRate, valueUpdate: 'keyup', enable: true" class="new-panels margin-bottom" />
+                </div>
+                <div id="learning-rate-slider" class="margin-bottom" data-bind="slider:{ range: 'min', step: 0.001, value: LearningRate, realtime: true, min: 0, max: 1  }, visible: DonePlaying"></div>
+            </div>
+            <div>
+                <label class="input-label">Minibatch Size</label>
+                <div>
+                    <input type="text" id="mini-batch-size-txt" data-bind="value: MiniBatchSize, valueUpdate: 'keyup', enable: true" class="new-panels margin-bottom" />
+                </div>
+                <div id="mini-batch-size-slider" class="margin-bottom" data-bind="slider:{ range: 'min', step: 1, value: MiniBatchSize, realtime: true, min: 10, max: 1000  }, visible: DonePlaying"></div>
+            </div>
+            <div>
+                <label class="input-label">Discount Factor</label>
+                <div>
+                    <input type="text" id="discount-factor-txt" data-bind="value: DiscountFactor, valueUpdate: 'keyup', enable: true" class="new-panels margin-bottom" />
+                </div>
+                <div id="discount-factor-slider" class="margin-bottom" data-bind="slider:{ range: 'min', step: 0.01, value: DiscountFactor, realtime: true, min: 0, max: 1  }, visible: DonePlaying"></div>
+            </div>
+            <div>
+                <label class="input-label">Target Update Frequency</label>
+                <div>
+                    <input type="text" id="target-update-freq-txt" data-bind="value: TargetUpdateFreq, valueUpdate: 'keyup', enable: true" class="new-panels margin-bottom" />
+                </div>
+                <div id="target-update-freq-slider" class="margin-bottom" data-bind="slider:{ range: 'min', step: 1, value: TargetUpdateFreq, realtime: true, min: 0, max: 1000  }, visible: DonePlaying"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*<div data-bind="visible: SelectedPlayerOption().Name == 'Tensor Flow' || SelectedPlayerOption().Name == 'Head-To-Head', attr:{Id: 'tensorFlowOptions'} ">*@
+
+<!--Encog Settings-->
+<div id="encog-settings-container-lander">
+    <div id="encog-settings-lander" data-bind="visible: EncogSelected">
+        <div class="form-group square-group">
+            <label>Encog Settings</label>
+            <br />
+            <div>
+                <label class="input-label" data-bind="text: 'Number Of Hidden Layers = ' + SelectedNumberOfNeuronOption()"></label>
+                <div class="margin-bottom" data-bind="slider:{ range: 'min', skip: 1, step: 1, value: SelectedNumberOfNeuronOption, realtime: true, min: 1, max: 10  }, visible: true"></div>
+            </div>
+            <br />
+            <div>
+                <fieldset>
+                    <legend><label class="input-label">Hidden Layer Configuration&nbsp;&nbsp;[ <span data-bind="click: ShowHideHiddenLayerConfigPanel, text: ShowHiddenLayerConfigPanel() == true? 'Hide' : 'Show'" style="cursor:pointer;color:orange;font-weight:normal;font-size:9px;" title="Expand/Collapse">+</span> ]&nbsp;&nbsp;</label></legend>
+                    <ul style="margin:0;padding:0;" data-bind="visible: ShowHiddenLayerConfigPanel, foreach: HiddenLayerNeuronsInputs">
+                        <li style="list-style:none;">
+                            <label class="input-label" data-bind="text: 'Enter number of neurons for Layer ' + eval($index()+1)"></label>
+                            <input type="text" class="new-panels margin-bottom form-control" data-bind="value: $data.NeuronCount, valueUpdate: 'keyup'" />
+                            <div class="margin-bottom" data-bind="slider:{ range: 'min', step: 1, value: $data.NeuronCount, realtime: true, min: 1, max: 50000  }, visible: true"></div>
+                        </li>
+                    </ul>
+                </fieldset>
+            </div>
+            <br />
+            <div>
+                <label class="input-label">Training Method</label>
+                <select id="encog-training-method" class="new-panels margin-bottom" data-bind="optionsAfterRender: SetOptionsDisable, enable: true, options: EncogTrainingMethods,
+                        optionsText: 'Name',
+                        value: SelectedTrainingMethod"></select>
+
+            </div>
+            <div data-bind="visible: SelectedTrainingMethod().Name == 'Annealing'">
+                <label>Annealing</label>
+                <div>
+                    <label class="input-label">Cycles</label>
+                    <input type="text" class="new-panels margin-bottom" data-bind="value: Cycles" />
+                </div>
+                <div>
+                    <label class="input-label">Epoch</label>
+                    <input type="text" class="new-panels margin-bottom" data-bind="value: Epochs" />
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="input-label">Start Temperature</label>
+                        <input type="text" class="new-panels margin-bottom" data-bind="value: StartTemp" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="input-label">Stop Temperature</label>
+                        <input type="text" class="new-panels margin-bottom" data-bind="value: StopTemp" />
+                    </div>
+                </div>
+            </div>
+            <div data-bind="visible: SelectedTrainingMethod().Name == 'Genetic' || SelectedTrainingMethod().Name == 'Neural PSO'">
+                <label>Genetic</label>
+                <div>
+                    <label class="input-label">Population Size</label>
+                    <input type="text" class="new-panels margin-bottom" data-bind="value: PopulationSize" />
+                </div>
+                <div>
+                    <label class="input-label">Epoch</label>
+                    <input type="text" class="new-panels margin-bottom" data-bind="value: Epochs" />
+                </div>
+                <div data-bind="visible: SelectedTrainingMethod().Name == 'Neural PSO'">
+                    <label>Randomization</label>
+                    <div>
+                        <label class="input-label">Minimum</label>
+                        <input type="text" class="new-panels margin-bottom" data-bind="value: MinRandom" />
+                    </div>
+                    <div>
+                        <label class="input-label">Maximum</label>
+                        <input type="text" class="new-panels margin-bottom" data-bind="value: MaxRandom" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--Encog Settings-->
+
+
+
+
+<hr />
+<h4 class="thin-header">Instructions</h4>
+<p>In order to play as Human. Press 'up' or 'w' button to activate thrust on the lunar lander</p>

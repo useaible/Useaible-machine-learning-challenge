@@ -1,0 +1,41 @@
+﻿@model useAIble.Core.Models.useAIblePresentation
+
+@*<ol class="breadcrumb">
+    <li>
+        <a href="/home">Home</a>
+    </li>
+    @DisplayBreadcrumbs()
+</ol>*@
+<div class="breadcrumb">
+
+        <a href="/home">Home</a>
+    @DisplayBreadcrumbs()
+</div>
+
+@helper DisplayBreadcrumbs()
+{
+    if (Model != null)
+    {
+        foreach (var breadcrumb in Model.Breadcrumbs)
+        {
+            @*<li>
+                <a href="@breadcrumb.Value">@breadcrumb.Key</a>
+            </li>*@
+
+                <a href="@breadcrumb.Value">@breadcrumb.Key</a>
+
+    }
+}
+}
+
+
+
+@*<div class="breadcrumb">
+    <a href="#" class="active">Browse</a>
+    <a href="#">Compare</a>
+    <a href="#">Order Confirmation</a>
+    <a href="#">Checkout</a>
+</div>
+<br /><br />*@
+
+

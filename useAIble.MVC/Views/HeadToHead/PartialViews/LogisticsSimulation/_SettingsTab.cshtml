@@ -1,0 +1,338 @@
+﻿
+<div class="panel-heading" id="firstSideBar">Settings</div>
+<div class="panel-body">
+    <ul class="nav nav-tabs" role="tablist">
+        <li role="presentation" class="active"><a href="#tab1" aria-controls="htab1" role="tab" data-toggle="tab">Settings</a></li>
+        <li data-bind="visible: HeadToHeadSelected"  role="presentation"><a href="#tab2" aria-controls="#tab2" role="tab" data-toggle="tab">Session Data</a></li>
+    </ul>
+    <div class="tab-content">
+        <div role="tabpanel" class="tab-pane active" id="tab1">
+            <br />
+            <div class="sidebarHeight row">
+                <div class="col-md-12">
+
+                    <label class="input-label">Select a Player <span id="player-error" style="color:orange;font-size:11px;"></span></label>
+                    <select id="player-option-dropdown" class="new-panels margin-bottom" data-bind="enable: true, options: useAIbleSimulator().PlayerOptions,
+                        optionsText: 'Name',
+                        value: useAIbleSimulator().SelectedPlayerOption"></select>
+
+                    <label data-bind="visible: ShowHeadToHeadOptions" class="input-label">Head-To-Head Options <span id="player-error" style="color:orange;font-size:11px;"></span></label>
+                    <select id="head2head-option-dropdown" class="new-panels margin-bottom" data-bind="visible: ShowHeadToHeadOptions, enable: true, options: HeadToHeadOptions,
+                        optionsText: 'Name',
+                        value: SelectedHeadToHeadOption,
+                        optionsCaption: 'Select...'"></select>
+
+                    @*<h4 class="input-label">Initialize:</h4>*@
+                    <span id="maze-dimension-error" style="color:orange;" class="h6"></span>
+                    <div class="row margin-bottom ">
+                        <div class="col-md-12"><h3 class="sub-header" >Cost settings</h3></div>
+                        <div class="col-md-6">
+                            <label class="input-label"><span data-toggle="tooltip"  data-container="body" data-placement="top" title="The cost storing an item in the store's inventory, charged at the end of the day">Storage cost per day</span></label>
+
+                            <div class="input-group" >
+                                <span class="input-group-addon">$</span>
+                                <input id="storage-cost-per-day-input" class="form-control" type="text"  data-bind="value: useAIbleSimulator().LogisticSettings().StorageCostPerDay">
+                            </div>
+                            
+                        </div>
+                        <div class="col-md-6">
+                            
+                            <label class="input-label"><span data-toggle="tooltip" data-container="body" data-placement="top" title="The cost of handling unaccomplished orders per end of the day">Backlog cost per day</span></label>
+                            
+                            <div class="input-group">
+                                <span class="input-group-addon">$</span>
+                                <input id="backlog-cost-per-day-input" class="form-control" type="text" style="display:inline-block; width: 100%" data-bind="value: useAIbleSimulator().LogisticSettings().BacklogCostPerDay" />
+                            </div>
+                            
+                        </div>
+                    </div>
+                    <div class="row margin-bottom">
+                        <div class="col-md-12"><h3 class="sub-header"><span data-toggle="tooltip" data-placement="top" title="Starting inventory for each player" data-container="body">Initial Inventory</span></h3></div>
+                        <div class="col-md-6 col-lg-3">
+                            <label class="input-label">Retailer</label>
+                            <input id="initial-inventory-retailer-input" class="form-control" type="text" style="display:inline-block; width: 100%" data-bind="value: useAIbleSimulator().LogisticSettings().RetailerInitialInventory"/>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <label class="input-label">Wholesaler</label>
+                            <input id="initial-inventory-wholesaler-input" class="form-control" type="text" style="display:inline-block; width: 100%" data-bind="value: useAIbleSimulator().LogisticSettings().WholesalerInitialInventory"/>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <label class="input-label">Distributor</label>
+                            <input id="initial-inventory-distributor-input" class="form-control" type="text" style="display:inline-block; width: 100%" data-bind="value: useAIbleSimulator().LogisticSettings().DistributorInitialInventory"/>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <label class="input-label">Factory</label>
+                            <input id="initial-inventory-factory-input" class="form-control" type="text" style="display:inline-block; width: 100%" data-bind="value: useAIbleSimulator().LogisticSettings().FactoryInitialInventory"/>
+                        </div>
+                    </div>
+                    @*<button class="btn btn-info full-width" data-bind="">Initialize</button>*@
+                    <hr />
+
+                    <div class="btn-group btn-group-justified margin-bottom">
+                        <a id="play-game-btn" href="#" class="btn btn-primary" data-bind="click: PlayGame"><span data-toggle="tooltip" data-container="body" data-placement="top" title="Play"><i class="fa fa-play" aria-hidden="true"></i></span></a>
+                    </div>
+
+                    <hr />
+                    <label class="input-label">Simulation Speed <span id="player-error" style="color:orange;font-size:11px;"></span></label>
+                    <select id="speed-option-dropdown" class="new-panels margin-bottom" data-bind="enable: true, options: useAIbleSimulator().SpeedOptions,
+                        optionsText: 'Name',
+                        value: useAIbleSimulator().SelectedSpeedOption"></select>
+                    <hr />
+
+                    <div data-bind="visible: useAIbleSelected() || TensorflowSelected()">
+                        <label class="input-label" for="sessionInput"><span data-toggle="tooltip" data-container="body" data-placement="top" title="the number of times you have the AI engine attempt to learn and predict for desired outputs">Sessions:</span></label>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <label class="sub-label">range:  1 - 5000</label>
+                                <input type="number" id="sessionInput" class="new-panels margin-bottom form-control" data-bind="value: useAIbleSimulator().NumberOfSessions, valueUpdate: 'keyup', enable: true">
+                                <div id="sessionSlider" class="margin-bottom" data-bind="visible: true, slider:{ range: 'min', step: 1, value: useAIbleSimulator().NumberOfSessions, realtime: true, min: 0, max: 5000  }"></div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <p data-bind="click: toggleAdvanced" class="advanced-option-text"><span data-bind="text: showHideText"></span> Advanced Options</p>
+                    <div class="form-group square-group" data-bind="visible: toggleAdvancedOptions">
+
+                        <div data-bind="visible: useAIbleSelected">
+                            <div class="panel-heading">
+                                useAIble Settings
+                            </div>
+                            <div>
+                                <label class="input-label"><span data-toggle="tooltip" data-placement="top" title="The amount of sessions that the AI engine will use randomized inputs to provide new combinations to use">Number of Session Randomness</span></label>
+                                <div>
+                                    <span id="multiSettingsErr" class="h6" style="color: orange;"></span>
+                                    <input type="text" id="sessionRandomnessInput" data-bind="value: useAIbleSimulator().NumSessionRandomness, valueUpdate: 'keyup', enable: true" class="new-panels margin-bottom form-control" />
+                                </div>
+                                <div id="sessionRandomnessSlider" class="margin-bottom" data-bind="slider:{ range: 'min', step: 1, value: useAIbleSimulator().NumSessionRandomness, realtime: true, min: 0, max: useAIbleSimulator().NumberOfSessions  }"></div>
+                            </div>
+
+                            <label class="input-label" for="RandomnessInput"><span data-toggle="tooltip" data-container="body" data-placement="top" title="the percentage range of Randomness used by the AI engine">Randomness:</span></label>
+                            <div class="row margin-bottom">
+                                <div class="col-md-6">
+                                    <label class="sub-label">Starting: 100%</label>
+                                    <input type="text" id="RandomnessInput" style="display:inline-block; width: 100%;" data-bind="value: useAIbleSimulator().StartRandomness, valueUpdate: 'keyup', enable: true" class="form-control">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="sub-label">Ending: 0%</label>
+                                    <input type="text" id="RandomnessInput2" style="display:inline-block; width: 100%;" data-bind="value: useAIbleSimulator().EndRandomness, valueUpdate: 'keyup', enable: true" class="form-control">
+                                </div>
+                            </div>
+                            <div class="margin-bottom" id="RandomnessSlider" data-bind="slider: { values: useAIbleSimulator().Randomness, realtime: true }"></div>
+
+                            <div>
+                                <div class="row">
+                                    <div class="col-md-6"></div>
+                                    <div class="col-md-6">
+                                        <button id="add-settings-btn" class="btn btn-info full-width margin-bottom" data-bind="click: useAIbleSimulator().AddSettings, enable: true">+ Add</button>
+
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+
+                                        <div class="compressed-table">
+                                            <table class="table table-striped table-bordered table-hover table-condensed">
+                                                <thead>
+                                                    <tr>
+                                                        @*<th>No.</th>*@
+                                                        <th>Start Session Randomness</th>
+                                                        <th>End Session Randomness</th>
+                                                        <th>Start Randomness</th>
+                                                        <th>End Randomness</th>
+                                                        <th></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody data-bind="foreach: useAIbleSimulator().NetworkSettings">
+                                                    <tr>
+                                                        @*<td data-bind="text: Id"></td>*@
+                                                        <td data-bind="text: StartSessionRandomness"></td>
+                                                        <td data-bind="text: EndSessionRandomness"></td>
+                                                        <td data-bind="text: StartRandomness"></td>
+                                                        <td data-bind="text: EndRandomness"></td>
+                                                        <td style="cursor:pointer;" data-bind="click: $root.useAIbleSimulator().RemoveSettings">X</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tensor-flow-container">
+        
+                        @*TENSOR FLOW SETTINGS HERE...*@
+                        <div class="second-setting" data-bind="visible: TensorflowSelected, attr:{Id: 'tensorFlowOptions'} ">
+                            @*<div class="form-group square-group">*@
+                                <div class="panel-heading">
+                                    Tensor Flow Settings
+                                </div>
+                                <div>
+                                    <label class="input-label">Random Action Prob</label>
+                                    <div>
+                                        <input type="text" id="random-action-prob-txt" data-bind="value: TensorFlowSimulator().RandomActionProb, valueUpdate: 'keyup', enable: true" class="new-panels margin-bottom form-control" />
+                                    </div>
+                                    <div id="random-action-prob-slider" class="margin-bottom" data-bind="slider:{ range: 'min', step: 0.01, value: TensorFlowSimulator().RandomActionProb, realtime: true, min: 0, max: 1  }, visible: true"></div>
+                                </div>
+                                <div>
+                                   
+                                    <label class="input-label">Random Action Decay</label>
+                                    <div>
+                                        <input type="text" id="random-action-decay-txt" data-bind="value: TensorFlowSimulator().RandomActionDecay, valueUpdate: 'keyup', enable: true" class="new-panels margin-bottom form-control" />
+                                    </div>
+                                    <div id="random-action-decay-slider" class="margin-bottom" data-bind="slider:{ range: 'min', step: 0.01, value: TensorFlowSimulator().RandomActionDecay, realtime: true, min: 0, max: 1  }, visible: true"></div>
+                                </div>
+                                <div>
+                                    <label class="input-label">Hidden1 Size</label>
+                                    <div>
+                                        <input type="text" id="hidden1-size-txt" data-bind="value: TensorFlowSimulator().Hidden1Size, valueUpdate: 'keyup', enable: true" class="new-panels margin-bottom form-control" />
+                                    </div>
+                                    <div id="hidden1-size-slider" class="margin-bottom" data-bind="slider:{ range: 'min', step: 1, value: TensorFlowSimulator().Hidden1Size, realtime: true, min: 0, max: 2000  }, visible: true"></div>
+                                </div>
+                                <div>
+                                    <label class="input-label">Hidden2 Size</label>
+                                    <div>
+                                        <input type="text" id="hidden2-size-txt" data-bind="value: TensorFlowSimulator().Hidden2Size, valueUpdate: 'keyup', enable: true" class="new-panels margin-bottom form-control" />
+                                    </div>
+                                    <div id="hidden2-size-slider" class="margin-bottom" data-bind="slider:{ range: 'min', step: 1, value: TensorFlowSimulator().Hidden2Size, realtime: true, min: 0, max: 2000  }, visible: true"></div>
+                                </div>
+                                <div>
+                                    <label class="input-label">Learning Rate</label>
+                                    <div>
+                                        <input type="text" id="learning-rate-txt" data-bind="value: TensorFlowSimulator().LearningRate, valueUpdate: 'keyup', enable: true" class="new-panels margin-bottom form-control" />
+                                    </div>
+                                    <div id="learning-rate-slider" class="margin-bottom" data-bind="slider:{ range: 'min', step: 0.001, value: TensorFlowSimulator().LearningRate, realtime: true, min: 0, max: 1  }, visible: true"></div>
+                                </div>
+                                <div>
+                                    <label class="input-label">Minibatch Size</label>
+                                    <div>
+                                        <input type="text" id="mini-batch-size-txt" data-bind="value: TensorFlowSimulator().MiniBatchSize, valueUpdate: 'keyup', enable: true" class="new-panels margin-bottom form-control" />
+                                    </div>
+                                    <div id="mini-batch-size-slider" class="margin-bottom" data-bind="slider:{ range: 'min', step: 1, value: TensorFlowSimulator().MiniBatchSize, realtime: true, min: 10, max: 1000  }, visible: true"></div>
+                                </div>
+                                <div>
+                                    <label class="input-label">Discount Factor</label>
+                                    <div>
+                                        <input type="text" id="discount-factor-txt" data-bind="value: TensorFlowSimulator().DiscountFactor, valueUpdate: 'keyup', enable: true" class="new-panels margin-bottom form-control" />
+                                    </div>
+                                    <div id="discount-factor-slider" class="margin-bottom" data-bind="slider:{ range: 'min', step: 0.01, value: TensorFlowSimulator().DiscountFactor, realtime: true, min: 0, max: 1  }, visible: true"></div>
+                                </div>
+                                <div>
+                                    <label class="input-label">Target Update Frequency</label>
+                                    <div>
+                                        <input type="text" id="target-update-freq-txt" data-bind="value: TensorFlowSimulator().TargetUpdateFreq, valueUpdate: 'keyup', enable: true" class="new-panels margin-bottom form-control" />
+                                    </div>
+                                    <div id="target-update-freq-slider" class="margin-bottom" data-bind="slider:{ range: 'min', step: 1, value: TensorFlowSimulator().TargetUpdateFreq, realtime: true, min: 0, max: 1000  }, visible: true"></div>
+                                </div>
+                            @*</div>*@
+                        </div>
+                        @*END TENSOR FLOW SETTINGS*@
+
+                            <!--Encog Settings-->
+                            <div id="encog-settings-container" data-bind="visible: EncogSelected">
+                                <div id="encog-settings-panel" class="form-group square-group">
+
+                                    <label>Encog Settings</label>
+                                    <br />
+                                    <div>
+                                        <div>
+                                            <label class="input-label" data-bind="text: 'Number Of Hidden Layers = ' + EncogSimulator().SelectedNumberOfNeuronOption()"></label>
+                                            <div class="margin-bottom" data-bind="slider:{ range: 'min', skip: 1, step: 1, value: EncogSimulator().SelectedNumberOfNeuronOption, realtime: true, min: 1, max: 10  }, visible: true"></div>
+                                        </div>
+                                    </div>
+                                    <br />
+                                    <div>
+                                        <fieldset>
+                                            <legend><label class="input-label">Hidden Layer Configuration&nbsp;&nbsp;[ <span data-bind="click: EncogSimulator().ShowHideHiddenLayerConfigPanel, text: EncogSimulator().ShowHiddenLayerConfigPanel() == true? 'Hide' : 'Show'" style="cursor:pointer;color:orange;font-weight:normal;font-size:9px;" title="Expand/Collapse">+</span> ]&nbsp;&nbsp;</label></legend>
+                                            <ul style="margin:0;padding:0;" data-bind="visible: EncogSimulator().ShowHiddenLayerConfigPanel,foreach: EncogSimulator().HiddenLayerNeuronsInputs">
+                                                <li style="list-style:none;">
+                                                    <label class="input-label" data-bind="text: 'Enter number of neurons for Layer ' + eval($index()+1)"></label>
+                                                    <input type="text" class="new-panels margin-bottom form-control" data-bind="value: $data.NeuronCount, valueUpdate: 'keyup'" />
+                                                    <div class="margin-bottom" data-bind="slider:{ range: 'min', step: 1, value: $data.NeuronCount, realtime: true, min: 1, max: 50000  }, visible: true"></div>
+                                                </li>
+                                            </ul>
+                                        </fieldset>
+                                    </div>
+                                    <br />
+                                    <div>
+                                        <label class="input-label">Training Method</label>
+                                        <select id="encog-training-method" class="new-panels margin-bottom" data-bind="enable: true, options: EncogSimulator().EncogTrainingMethods,
+                        optionsText: 'Name',
+                        value: EncogSimulator().SelectedTrainingMethod"></select>
+
+                                    </div>
+                                    <div data-bind="visible: EncogSimulator().SelectedTrainingMethod().Name == 'Annealing'">
+                                        <label>Annealing</label>
+                                        <div>
+                                            <label class="input-label">Cycles</label>
+                                            <input type="text" class="new-panels margin-bottom" data-bind="value: EncogSimulator().Cycles"/>
+                                        </div>
+                                        <div>
+                                            <label class="input-label">Epoch</label>
+                                            <input type="text" class="new-panels margin-bottom" data-bind="value: EncogSimulator().Epochs"/>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label class="input-label">Start Temperature</label>
+                                                <input type="text" class="new-panels margin-bottom" data-bind="value: EncogSimulator().StartTemp"/>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="input-label">Stop Temperature</label>
+                                                <input type="text" class="new-panels margin-bottom" data-bind="value: EncogSimulator().StopTemp"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div data-bind="visible: EncogSimulator().SelectedTrainingMethod().Name != 'Annealing'">
+                                        <label data-bind="text: EncogSimulator().SelectedTrainingMethod().Name"></label>
+                                        <div data-bind="visible: EncogSimulator().SelectedTrainingMethod().Name == 'Genetic' || EncogSimulator().SelectedTrainingMethod().Name == 'Neural PSO'">
+                                            <label class="input-label">Population Size</label>
+                                            <input type="text" class="new-panels margin-bottom" data-bind="value: EncogSimulator().PopulationSize"/>
+                                        </div>
+                                        <div>
+                                            <label class="input-label">Epoch</label>
+                                            <input type="text" class="new-panels margin-bottom" data-bind="value: EncogSimulator().Epochs"/>
+                                        </div>
+                                        <div data-bind="visible: EncogSimulator().SelectedTrainingMethod().Name == 'Neural PSO'">
+                                            <label>Randomization</label>
+                                            <div>
+                                                <label class="input-label">Minimum</label>
+                                                <input type="text" class="new-panels margin-bottom" data-bind="value: EncogSimulator().MinRandom" />
+                                            </div>
+                                            <div>
+                                                <label class="input-label">Maximum</label>
+                                                <input type="text" class="new-panels margin-bottom" data-bind="value: EncogSimulator().MaxRandom" />
+                                            </div>
+                                        </div>
+                                        <div data-bind="visible: EncogSimulator().SelectedTrainingMethod().Name != 'Neural PSO'">
+                                            <div data-bind="visible: EncogSimulator().SelectedTrainingMethod().Name != 'Genetic' && EncogSimulator().SelectedTrainingMethod().Name != 'Resilient Propagation' 
+    && EncogSimulator().SelectedTrainingMethod().Name != 'SCG' && EncogSimulator().SelectedTrainingMethod().Name != 'LMA'">
+                                                <label class="input-label">Learn Rate</label>
+                                                <input type="text" class="new-panels margin-bottom" data-bind="value: EncogSimulator().LearnRate" />
+                                            </div>
+                                            <div data-bind="visible: EncogSimulator().SelectedTrainingMethod().Name == 'Back Propagation'">
+                                                <label class="input-label">Momentum</label>
+                                                <input type="text" class="new-panels margin-bottom" data-bind="value: EncogSimulator().Momentum" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--Encog Settings-->
+
+                       </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div role="tabpanel" class="tab-pane" id="tab2" data-bind="visible: HeadToHeadSelected">
+            <button class="btn btn-info full-width view-chart margin-bottom" data-bind="visible: ShowChartBtn" style="margin-top: 20px;">View Chart</button>
+            <div class="sidebarHeight row">
+                <div class="headtohead-simulation-1 col-md-12" id="useaible-session-container">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script></script>

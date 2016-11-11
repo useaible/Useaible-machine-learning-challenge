@@ -1,0 +1,147 @@
+﻿
+@{
+    ViewBag.Title = "Maze";
+    Layout = "~/Views/Shared/_AiProjects.cshtml";
+}
+
+<input id="selected-player-hidden-input-maze" type="hidden" data-bind="value: SelectedPlayerOption().Name" />
+<input id="selected-head2head-options-hidden-input-maze" type="hidden" data-bind="value: SelectedHeadToHeadOption()? SelectedHeadToHeadOption().Id : ''" />
+<div class="game-container" id="main">
+    @Html.Partial("PartialViews/_ViewCharts")
+    <div class="row">
+        <div class="container-fluidx rowx">
+            <div data-bind="attr: {class: gameContainer}">
+                <div class="col-md-3 sidebarPanel">
+                    <div class="panel panel-primary  k-content">
+                        @Html.Partial("PartialViews/_SideBar")
+                    </div>
+                </div>
+
+                <div class="col-md-6 canvas-main-container canvasContainer mainCanvas">
+                    <div id="useAIble-canvas-container">
+                        <div class="">
+                            <canvas id="useaible">Can't load the maze game, because your browser doesn't support HTML5.</canvas>
+                            <noscript>JavaScript is not enabled. To play the game, you should enable it.</noscript>
+                            <br />
+                            <div data-bind="visible: SelectedPlayerOption().Name == 'useAIble' || SelectedPlayerOption().Name == 'Head-To-Head'" style="color: white;position:absolute;top:20px;right:20px;">
+                                <span id="playerName">Player: useAIble</span>
+                                <br />
+                                <span>Status: </span><span id="loadingMaze"></span>
+                                <br />
+                                <span>Session: </span><span id="currentSession"></span>
+                                <br />
+                                <span>Direction: </span><span id="direction"></span>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div id="tensorflow-canvas-container">
+                        <div>
+                            <canvas id="tensorflow">Can't load the maze game, because your browser doesn't support HTML5.</canvas>
+                            <noscript>JavaScript is not enabled. To play the game, you should enable it.</noscript>
+                            <br />
+                            <div data-bind="visible: SelectedPlayerOption().Name == 'Tensor Flow' || SelectedPlayerOption().Name == 'Head-To-Head'" style="color: white;position:absolute;top:20px;right:20px;">
+                                <span id="playerName2">Player: Tensor Flow</span>
+                                <br />
+                                <span>Status: </span><span id="loadingMaze2"></span>
+                                <br />
+                                <span>Session: </span><span id="currentSession2"></span>
+                                <br />
+                                <span>Direction: </span><span id="directionTF"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="encog-canvas-container">
+                        <div>
+                            <canvas id="encog">Can't load the maze game, because your browser doesn't support HTML5.</canvas>
+                            <noscript>JavaScript is not enabled. To play the game, you should enable it.</noscript>
+                            <br />
+                            <div data-bind="visible: SelectedPlayerOption().Name == 'Encog' || SelectedPlayerOption().Name == 'Head-To-Head'" style="color: white;position:absolute;top:20px;right:20px;">
+                                <span id="playerNameEncog">Player: Encog</span>
+                                <br />
+                                <span>Status: </span><span id="loadingMazeEncog"></span>
+                                <br />
+                                <span>Session: </span><span id="currentSessionEncog"></span>
+                                <br />
+                                <span>Direction: </span><span id="directionEncog"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="col-md-3 sessionContainer" style="">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            Session Data
+                        </div>
+                        <div class="body-body table-container left-session-data">
+                            @Html.Partial("PartialViews/Maze/_SessionsTab")
+                        </div>
+                    </div>
+                    @*<div class="h6" data-bind="with: SelectedPlayerOption">
+                        <div data-bind="visible: Name != 'Head-To-Head'">
+                            <div data-bind="visible: $root.DonePlaying() == false">
+                                <label>Waiting Results</label><br />
+                                <label>Session:</label> <span data-bind="text: $root.SessionWaitText"></span><br />
+                                <label>Time Elapse:</label> <span data-bind="text: $root.WaitTimeElapse"></span>
+                                <div class="progress progress-striped active">
+                                    <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>*@
+                </div>
+            </div>
+            <div data-bind="visible: headTohead, attr: {class: gameContainer}">
+
+                <div class="col-md-3 newSideBar ">
+                    @*@Html.Partial("PartialViews/_SideBar2")*@
+                    <div class="panel panel-primary  k-content">
+                        <div class="panel-heading" data-bind="text: SelectedHeadToHeadOption()? SelectedHeadToHeadOption().Id == 'useAIble-tensorflow'? 'Tensor Flow' : 'Encog' : ''"></div>
+                        <div class="panel-body">
+                            <ul class="nav nav-tabs" role="tablist">
+                                <li role="presentation" class="active"><a href="#secondTab1" aria-controls="secondTab1" role="tab" data-toggle="tab">Settings</a></li>
+                                <li role="presentation"><a href="#secondTab2" aria-controls="secondTab2" role="tab" data-toggle="tab">Session Data</a></li>
+                            </ul>
+                            <div class="tab-content sidebarHeight">
+                                <div role="tabpanel" class="tab-pane active settingTab2" id="secondTab1">
+                                    <button class="btn btn-primary full-width" data-bind="click: ReplayGame.bind($root, 'tensorFlow'), visible: true"><span data-toggle="tooltip" data-placement="top" title="Replay"><i class="fa fa-repeat" aria-hidden="true"></i></span></button>
+                                </div>
+                                <div role="tabpanel" class="tab-pane sessionTab2 sidebarHeight" id="secondTab2"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 newCavas canvas-main-container canvasContainer">
+                   
+                </div>
+                @*<div class="col-md-3 newSessionData">
+                    sessionbar2
+                </div>*@
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
+<script src="~/Scripts/notify.js"></script>
+
+<script src="~/Scripts/Repositories/DRNNRepository.js"></script>
+<script src="~/Scripts/Game/LunarLander/Models/RNNCoreSettings.js"></script>
+<script src="~/Scripts/Game/Maze/UseAIbleMazeMaster.js"></script>
+<script src="~/Scripts/Game/Maze/TFMazeMaster.js"></script>
+<script src="~/Scripts/Game/LogisticSimulation/Models/HiddenLayerNeuronVM.js"></script>
+<script src="~/Scripts/Game/Maze/EncogMazeMaster.js"></script>
+
+<script src="~/Scripts/Game/ViewCharts.js"></script>
+<script src="~/Scripts/Game/Maze/MazeMasterUI.js"></script>
+
+<script>
+    //$("#sessionSlider").on('change', function (event, ui) {
+    //    $("#sessionRandomnessSlider").slider("value", ui.value / 2);
+    //    mainVM.NumSessionRandomness(ui.value / 2);
+    //});
+</script>
