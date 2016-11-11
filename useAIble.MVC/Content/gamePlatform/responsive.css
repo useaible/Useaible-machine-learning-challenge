@@ -1,0 +1,128 @@
+﻿
+/* Media Queries
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+/*
+Note: The best way to structure the use of media queries is to create the queries
+near the relevant code. For example, if you wanted to change the styles for buttons
+on small devices, paste the mobile query code up in the buttons section and style it
+there.
+*/
+
+@media (max-width: 1681px){
+    .compressed-table>.table-bordered>thead>tr>th {
+        font-size: 5px;
+    }
+}
+
+@media (max-width: 1481px){
+    .compressed-table>.table-bordered>thead>tr>th {
+        font-size: 4px;
+    }
+
+    .inner-chart-container .panel .margin-bottom {
+        margin-bottom: 25px;
+        margin-bottom: 2px;
+    }
+    .label-header {
+        font-size: 12px;
+        font-family: 'Arvo', serif;
+        font-family: 'Lato', sans-serif;
+    }
+    .value-text {
+        font-size: 20px;
+        font-family: 'Lato', sans-serif;
+        line-height: 18px;
+    }
+
+}
+@media (max-width: 992px){
+    .left-side-menu .text{
+        display:initial;
+    }
+    .sidebarHeight {
+        max-height: 85vw;
+    }
+    .expanded{
+        position: initial;
+        width: 100%;
+        z-index:1;
+    }
+    table-container{
+        min-height: initial;
+        max-height: initial;
+    }
+    .sidebarHeight {
+        max-height: initial;
+    }
+    #mazecanvas, #mazecanvas2 {
+        width: 75%;
+        margin-top: 75px;
+    }
+    .simulator-container{
+        height: 85vw;
+        margin-bottom: 30px;
+    }
+}
+
+
+
+/* Larger than mobile */
+@media (min-width: 400px) {
+
+}
+
+/* Landscape phones and down BOOTSTRAP*/
+@media (max-width: 480px) {
+
+}
+
+/* Larger than phablet (also point when grid becomes active) */
+@media (min-width: 550px) {
+
+}
+
+/* Larger than tablet */
+@media (min-width: 750px) {
+
+}
+
+/* Landscape phone to portrait tablet BOOTSTRAP*/
+@media (max-width: 767px) {
+
+}
+
+/* Portrait tablet to landscape and desktop BOOTSTRAP*/
+@media (min-width: 768px) and (max-width: 979px) {}
+
+/* col-md BOOTSTRAP*/
+@media (min-width: 992px){
+    .nav-menu {
+        /*width: 215px;*/
+        /*width: 180px;*/
+        width: 50px;
+        position: absolute;
+        bottom: 0;
+        top: 0;
+        left: 0;
+        /*margin-top: 50px;*/
+            margin-top: 86px;
+        z-index: 3;
+    }
+    .content-container {
+        margin-left: 180px;
+        margin-left: 50px;
+    }
+}
+
+/* Larger than desktop */
+@media (min-width: 1000px) {
+
+}
+
+/* Larger than Desktop HD */
+@media (min-width: 1200px) {
+
+}
+
+
+

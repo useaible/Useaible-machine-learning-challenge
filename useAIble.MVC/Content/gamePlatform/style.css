@@ -1,0 +1,419 @@
+﻿@import 'https://fonts.googleapis.com/css?family=Lato:100,300,400,700,900';
+@import 'https://fonts.googleapis.com/css?family=Arvo:400,500,600,700,900';
+@import 'https://fonts.googleapis.com/css?family=Fjalla+One';
+@import 'https://fonts.googleapis.com/css?family=Fjalla+One|Roboto';
+body {
+    background: #ececec;
+}
+.lunarLander {
+    margin: 0 auto;
+    display: table;
+    border: 2px solid #ffffff;
+    width: 95%;
+    margin-bottom: 20px;
+}
+
+.nav-menu .list-group-item{
+    background: transparent;
+    color: #ffffff;
+    border: 1px solid #2d4f6c;
+    border: 1px solid #2d78ba;
+    border-radius:initial;
+    border-left:initial;
+    border-right:initial;
+}
+.nav-menu{
+    transition: ease-out .5s;
+}
+.left-side-menu .text{
+    display: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: fjalla one;
+}
+.nav-area {
+    /*border-right: 1px solid #ffffff;*/
+}
+.game-container {
+    /*background: #555;*/
+}
+.game-container .nav-tabs > li > a{
+    padding: 3px 10px;
+}
+.game-container .nav-tabs{
+    display:none;
+    font-family: fjalla one;
+    margin-bottom: 5px;
+
+}
+.game-container  .nav-tabs > li.active > a{
+    border: none;
+    border-bottom: 2px solid  #23A9FE;
+}
+.game-container .nav-tabs > li > a{
+    border: none;
+}
+.game-container .nav-tabs > li > a:hover{
+    border-bottom: 2px solid #23A9FE;
+    background-color: initial;
+}
+
+.site-logo {
+    /*margin-left: 5px;
+    width: 114px;
+    margin-top: -15px;
+    width: 222px;*/
+} 
+.game-nav-bar {
+    background-color: #132739;
+    border: initial;
+    border-radius: initial;
+    box-shadow: 2px 1px 2px 0px #787d81;
+        background-color: #0065bd;
+}
+.game-nav-bar .fa{
+    padding-right: 10px;
+}
+
+.full-width{
+    width: 100%;
+}
+.margin-bottom{
+    margin-bottom: 10px;
+}
+.new-panels{
+    width: 100%;
+    height: 30px;   
+    /*background: #333;
+    color: #ffffff;*/
+    padding-left: 10px;
+}
+.regular-button{
+    background: #000000;
+}
+.table-container{
+    overflow: auto;
+    max-height: 750px;
+    padding: 0 20px;
+    height: 740px;
+    min-height: 34vw;
+    max-height: 37vw;
+}
+.table-container .table > tbody > tr > td{
+    line-height: 7px;
+    font-size: 12px;
+}
+.input-label{
+    font-size: 12px;
+    margin-bottom: 2px;
+    color: #62707c;
+    font-family: lato;
+}
+.panel{
+    border-radius: initial;
+}
+.panel .panel-heading{
+    border-radius: initial;
+    font-family: fjalla one;
+    font-size: 16px;
+}
+.start-button{
+    height: 40px;
+    font-size: 20px;
+}
+.nav-menu{
+    background: rgb(32, 55, 75);
+    background: #0065bd;
+}
+.game-container{
+
+}
+.sub-label{
+    font-size: 11px;
+    color: rgb(164, 164, 164);
+}
+.compressed-table>.table-bordered>thead>tr>th {
+    border-bottom-width: 2px;
+    font-size: 8px;
+}
+.compressed-table>.table-bordered tr td {
+    font-size: 10px;
+}
+.square-group{
+    border: 1px solid #dedede;
+    padding: 10px;
+    margin-top: 20px;
+    background: #f4f4f4;
+}
+.sidebarPanel, .newSideBar{
+    transition: ease 1s;
+}
+.minimized{
+    width: 150px !important;
+}
+.expanded{
+    position: absolute;
+    width: 450px;
+    z-index:1;
+}
+.expanded .panel-heading{
+     cursor: pointer;
+     position: relative;
+}
+.patent-pending{
+    color: #FFF;
+    position: fixed;
+    right: 15px;
+    bottom: -5px;
+    background: #fe8f41;
+    padding: 2px 12px;
+    font-size: 12px;
+    font-weight: 600;
+
+}
+.list-group-item a{
+    color:#ffffff;
+    text-decoration: initial;
+}
+.list-group-item a:hover{
+    color:rgb(164, 164, 164);
+    text-decoration: initial;
+}
+.sidebarHeight{
+    min-height: 34vw;
+    max-height: 800px;
+    max-height: 37vw;
+    overflow: auto;
+}
+.canvas-main-container>div{
+    background: #000000;
+    padding-bottom: 7vw;
+    min-height: 40vw;
+    padding-top: 7vw;
+    margin-bottom: 25px;
+}
+.maze-canvas-container{
+    display: table;
+    background: #000000;
+    margin: 0 auto;
+
+}
+#useaible, #tensorflow, #encog{
+    margin: 0px auto;
+    display: table;
+}
+.left-side-menu .fa{
+    padding-right: 10px;
+    padding-top: 5px;
+}
+.left-side-menu .list-group-item div{
+    height: 30px;
+
+}
+.left-side-menu .list-group-item:hover{
+    background:#2d4f6c;
+    background: rgba(0, 0, 0, 0.13);
+    transition: ease-out .5s;
+
+}
+.expanded .panel-primary>.panel-heading .fa{
+    font-size: 26px;
+    position: absolute;
+    color: #ff9041;
+    text-shadow: -1px 1px 7px #000000;
+    right: -12px;
+    top: 6px;
+}
+
+/*View Charts Style*/
+
+.outer-chart-container{
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom:0;
+    left:0;
+    background: rgba(0, 0, 0, 0.24);
+    z-index: 3;
+    width: 100%;
+}
+.chart-container{
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: #ffffff;
+    z-index: 4;
+    left: 0;
+    top: 80px;
+    right: 0;
+    bottom: 80px;
+    box-shadow: 0px 1px 13px 2px #000;
+}
+.inner-chart-container{
+    width: 100%;
+}
+.close-button{
+    position: absolute;
+    right: 20px;
+    z-index: 5;
+    cursor: pointer;
+}
+.value-text{
+    font-size: 35px;
+    font-family: 'Lato', sans-serif;
+    line-height: 18px;
+}
+.label-header{
+    font-size: 16px;
+    font-family: 'Arvo', serif;
+        font-family: 'Lato', sans-serif;
+}
+.font-lato{
+    font-family: 'Lato', sans-serif;
+}
+.font-Arvo{
+    font-family: 'Lato', sans-serif;
+}
+.useaible-panel .value-text{
+    color: #ff6800;
+}
+.tensorflow-panel .value-text{
+    color: #a0a700;
+}
+.inner-chart-container .main-header{
+    font-size: 30px;
+}
+.inner-chart-container .panel .margin-bottom{
+    margin-bottom: 25px;
+    margin-bottom: 15px;
+}
+.main-header{
+    text-align: center;
+    font-family: 'Lato', sans-serif;
+    font-size: 50px;
+}
+.pager{
+    border: 1px solid #ffffff;
+    padding: 6px 14px 4px 14px;
+    background: #ff6800;
+    color: #ffffff;
+    cursor: pointer;
+}
+.outer-chart-container{
+    display: none;
+}
+.value-text-container{
+    /*overflow: hidden;*/
+}
+.header-area h2{
+    font-family: fjalla one;
+    /*margin-top: -12px;*/
+    font-size: 20px;
+}
+.header-area hr{
+    border-top: 1px solid #2d4f6c;
+}
+.list-group .active{
+    background: #344859;
+}
+.sub-header{
+    font-size: 15px;
+    font-family: oswald;
+}
+.advanced-option-text{
+    color: #F5732C;
+    font-family: oswald;
+    font-size: 13px;
+    float: right;
+    cursor: pointer;
+}
+.simulator-container{
+    position: relative; 
+    height: 42.5vw;
+}
+.sessionContainer .table>tbody>tr>td{
+    font-size: 13px;
+    line-height: 4px;
+}
+.left-session-data .fa-cog{
+    font-size: 13px;
+    margin-top: -4px;
+}
+.panel-primary {
+    border-color: #ffffff;
+}
+.panel-primary>.panel-heading{
+    background-color: #3f3f3f;
+}
+
+/*dustin's css*/
+
+
+.navbar-default {
+    background-color: #0065BD;
+    border-color: #0065BD;
+    background: -webkit-linear-gradient(#00427b, #0065bd);
+    /* height: 101px; */
+    z-index: 1;
+    margin-bottom: 0px;
+    min-height: 20px;
+    border-top: 0;
+    border-bottom: 1px solid #2791ef;
+}
+
+.navbar-brand {
+    float: left;
+    /* height: 100px; */
+    vertical-align: middle;
+    font-size: 18px;
+    line-height: 30px;
+    padding-top: 10px;
+    padding-left: 10px;
+    width: 300px;
+    height: initial !important;
+    min-height: 20px;
+}
+.navbar-default .navbar-collapse{
+    text-align: center;
+    padding-top: 0px;
+    padding-right: 0px;
+    padding-left: 0px;
+}
+.navbar-nav{
+    margin-top: 16px;
+    font-size: 25px;
+    display: inline-block;
+    float: none;
+    border-radius: initial;
+}
+.navbar-default .navbar-nav>li>a {
+    color: #fff;
+    font-family: Arvo;
+    font-weight: normal;
+    /*font-size: 30px;*/
+}
+.social1 {
+    float: right;
+    z-index: 1;
+    padding: 5px 5px 5px 5px;
+    margin-top: 25px;
+}
+.social1 .aps-each-icon{
+    display: inline-block;
+    position: relative;
+ }
+
+.social1 .aps-each-icon img{
+    width: 25px;
+    opacity: 1;
+    -moz-box-shadow: 0px 0px 0px 0;
+    /* -webkit-box-shadow: 0px 0px 0px 0; */
+    box-shadow: 0px 0px 0px 0;
+    padding: 0px;
+ }
+.navbar-brand img{
+    width: 274px;
+}
+tbody tr td .fa-cog{
+    font-size: 17px;
+}
