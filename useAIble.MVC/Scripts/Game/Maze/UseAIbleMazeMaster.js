@@ -1,11 +1,10 @@
-﻿function UseAIbleMazeMaster(drawRectangle, mazeGenerated, move, resetPosition, sessionData, donePlaying, speed, currentCanvas, X, Y, useAIbleShowChart, showComparisionChart) {
+function UseAIbleMazeMaster(drawRectangle, mazeGenerated, move, resetPosition, sessionData, donePlaying, speed, currentCanvas, X, Y, useAIbleShowChart, showComparisionChart) {
 
     var numSessions;
     var pixelMultiplier = 10;
     var repo = new DRNNRepository();
     var self = this;
     var USER_TOKEN;
-    var client;
 
     self.MazeGridData = {};
     self.MazeGrid = {};
@@ -147,8 +146,6 @@
     self.MoveList = [];
     self.StartGame = ko.observable(false);
     self.Playing = ko.observable(false);
-    
-    var PLAYER2_DONE_PLAYING;
 
     self.StartGame.subscribe(function (val) {
 
@@ -160,6 +157,12 @@
             $.each(self.MoveList, function (index, value) {
 
                 if (!value.BatchDone()) {
+
+                    if (IS_HEAD_TO_HEAD) {
+                        CURRENT_GAME_DONE(false);
+                    }
+
+                    CURRENTLY_PLAYING = true;
 
                     $("#loadingMaze").text("");
                     $("#currentSession").text(value.Session);
@@ -173,6 +176,9 @@
                     console.log("Playing session " + value.Session);
 
                     self.Playing(true);
+
+                    donePlaying(false);
+                    disableSettingsControls(true);
 
                     $.each(sessionData(), function (sess_index, sess_data) {
                         if (sess_data.Type() == 'useAIble') {
@@ -206,22 +212,31 @@
 
                             moveCounter++;
 
-                            if (moveCounter <= len) {
+                            if (moveCounter < len) {
                                 $("#loadingMaze").text("Playing...");
+                                disableSettingsControls(true);
                                 start();
                             }
-                            else if (moveCounter > len) {
+                            else if(moveCounter == len) {
 
-                                $("#loadingMaze").text("Loading maze...");
+                                $("#loadingMaze").text("Loading data...");
 
                                 value.BatchDone(true);
                                 self.Playing(false);
 
                                 if (value.Done) {
 
+                                    if (IS_HEAD_TO_HEAD) {
+                                        CURRENT_GAME_DONE(true);
+                                    }
+
+                                    CURRENTLY_PLAYING = false;
+
                                     resetPosition(currentCanvas, X, Y);
-                                    $("#loadingMaze").text("Done");
+                                    //$("#loadingMaze").text("Ready session "+ eval(value.Session + 1));
+                                    $("#loadingMaze").text("Loading data...");
                                     $("#currentSession").text("");
+                                    $("#direction").text('');
 
                                     //sessionData.push({
                                     //    Id: moveObj.Session,
@@ -229,22 +244,45 @@
                                     //    Type: ko.observable('useAIble')
                                     //});
 
-                                    var exist = false;
-                                    var sess;
-                                    $.each(sessionData(), function (sess_index, sess_data) {
-                                        if (sess_data.Type() == 'useAIble') {
-                                            if (value.Session == sess_data.Id) {
-                                                sess_data.Done(true);
-                                                sess_data.Playing(false);
-                                                return false;
-                                            }
+                                    //var exist = false;
+                                    //var sess;
+                                    //$.each(sessionData(), function (sess_index, sess_data) {
+                                    //    if (sess_data.Type() == 'useAIble') {
+                                    //        if (value.Session == sess_data.Id) {
+                                    //            sess_data.Done(true);
+                                    //            sess_data.Playing(false);
+                                    //            return false;
+                                    //        }
+                                    //    }
+                                    //});
+
+                                    var sessDataObj = {
+                                        Id: value.Session,
+                                        Score: ko.observable(moveObj.Score),
+                                        Type: ko.observable('useAIble'),
+                                        Playing: ko.observable(false),
+                                        Done: ko.observable(true)
+                                    };
+
+                                    sessDataObj.Icon = ko.computed(function () {
+                                        if (sessDataObj.Done()) {
+                                            return '<i class="fa fa-check-square-o" aria-hidden="true" title="Done Playing"></i>';
+                                        } else if (!sessDataObj.Done() && sessDataObj.Playing()) {
+                                            return '<i class="fa fa-cog fa-spin fa-3x fa-fw" aria-hidden="true" title="Currently Playing"></i>';
+                                        } else if (!sessDataObj.Done() && !sessDataObj.Playing()) {
+                                            return '<i class="fa fa-hourglass-half" aria-hidden="true" title="Pending"></i>';
                                         }
                                     });
+
+                                    sessionData.push(sessDataObj);
 
                                     console.log("Done playing session " + value.Session);
 
                                     
                                     if (numSessions == value.Session) {
+
+                                        $("#loadingMaze").text("Done");
+                                        $("#currentSession").text("");
 
                                         //disconnect = new Paho.MQTT.Message("disconnected");
                                         //disconnect.destinationName = USER_TOKEN +"/disconnect";
@@ -257,23 +295,37 @@
 
                                             if (PLAYER2_DONE_PLAYING()) {
                                                 disableSettingsControls(false);
-                                                $(".outer-chart-container").show();
-                                                showComparisionChart(sessionData());
+                                                //$(".outer-chart-container").show();
+                                                //showComparisionChart(sessionData());
+                                                $(".view-chart").show();
                                             }
 
                                         } else {
                                             disableSettingsControls(false);
-                                            $(".outer-chart-container").show();
-                                            showComparisionChart(sessionData());
+                                            //$(".outer-chart-container").show();
+                                            //showComparisionChart(sessionData());
+                                            $(".view-chart").show();
                                         }
 
                                         //self.DonePlaying(true);
 
                                         //console.log("client disconnected");
+
+                                        if (client) {
+                                            if (client.isConnected()) {
+                                                client.disconnect();
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    if (IS_HEAD_TO_HEAD) {
+                                        self.StartGame(self.StartGame() ? false : true);
                                     }
                                 }
 
-                                self.StartGame(self.StartGame() ? false : true);
+                                if (!IS_HEAD_TO_HEAD) {
+                                    self.StartGame(self.StartGame() ? false : true);
+                                }
                             }
 
                         }, speed().Id);
@@ -290,24 +342,57 @@
     });
 
     var sessionCount = 0;
-    self.Play = function (userToken, sessions, maze, settings, player2DonePlaying) {
 
-        USER_TOKEN = userToken;
-        numSessions = sessions;
+    var PLAYER2_DONE_PLAYING;
+    var PLAYER2_CURRENT_GAME_DONE;
+    var CURRENT_GAME_DONE;
+    var IS_HEAD_TO_HEAD = false;
+    var CURRENTLY_PLAYING = false;
+    var USEAIBLE_BATCH_DONE;
 
-        donePlaying(false);
-        PLAYER2_DONE_PLAYING = player2DonePlaying;
-        disableSettingsControls(true);
+    self.Play = function (userToken, sessions, maze, settings, player2DonePlaying, player2CurrentGameDonePlaying, useAIbleCurrentGameDonePlaying, useAIbleBatchDone) {
 
-        self.MoveList = [];
+        try {
 
-        client = new Paho.MQTT.Client("dev.useaible.com", 61614, repo.GenerateGUID());
+            sessionData([]);
 
-        client.onConnectionLost = function (msg) {
-            donePlaying(true);
-            console.log("connection lost");
-            disableSettingsControls(false);
-        };
+            sessionCount = 0;
+
+            USER_TOKEN = userToken;
+            numSessions = sessions;
+
+            donePlaying(false);
+
+            PLAYER2_DONE_PLAYING = player2DonePlaying;
+            PLAYER2_CURRENT_GAME_DONE = player2CurrentGameDonePlaying;
+            CURRENT_GAME_DONE = useAIbleCurrentGameDonePlaying;
+
+            if (CURRENT_GAME_DONE) {
+                CURRENT_GAME_DONE(false);
+            }
+
+            USEAIBLE_BATCH_DONE = useAIbleBatchDone;
+
+            if (USEAIBLE_BATCH_DONE) {
+                USEAIBLE_BATCH_DONE(true);
+            }
+
+            IS_HEAD_TO_HEAD = PLAYER2_CURRENT_GAME_DONE ? true : false;
+
+            disableSettingsControls(true);
+
+            self.MoveList = [];
+
+            //client = new Paho.MQTT.Client("dev.useaible.com", 61614, repo.GenerateGUID());
+            client = new Paho.MQTT.Client(MQTT_URL, MQTT_PORT, repo.GenerateGUID());
+
+            client.onConnectionLost = function (msg) {
+
+                console.log(msg.errorMessage);
+
+                //donePlaying(true);
+                //disableSettingsControls(false);
+            };
 
             client.onMessageArrived = function (msg) {
 
@@ -318,9 +403,22 @@
 
                     sessionCount++;
 
-                    if (sessionCount >= sessions) {
-                        useAIbleShowChart(true);
+                    if (IS_HEAD_TO_HEAD) {
+
+                        if (sessionCount == 1) {
+                            CURRENT_GAME_DONE(true);
+                        } else {
+                            if (!CURRENTLY_PLAYING) {
+                                CURRENT_GAME_DONE(true);
+                            } else {
+                                self.StartGame(self.StartGame() ? false : true);
+                            }
+                        }
                     }
+
+                    //if (sessionCount >= sessions) {
+                    //    useAIbleShowChart(true);
+                    //}
 
                     var output = eval("(" + msg.payloadString + ")");
 
@@ -350,25 +448,25 @@
                         }
                     } else if(!exist) {
 
-                        var sessDataObj = {
-                            Id: output.Session,
-                            Score: ko.observable(output.SessionScore),
-                            Type: ko.observable('useAIble'),
-                            Playing: ko.observable(false),
-                            Done: ko.observable(false)
-                        };
+                        //var sessDataObj = {
+                        //    Id: output.Session,
+                        //    Score: ko.observable(output.SessionScore),
+                        //    Type: ko.observable('useAIble'),
+                        //    Playing: ko.observable(false),
+                        //    Done: ko.observable(false)
+                        //};
 
-                        sessDataObj.Icon = ko.computed(function () {
-                            if (sessDataObj.Done()) {
-                                return '<i class="fa fa-check-square-o" aria-hidden="true" title="Done Playing"></i>';
-                            } else if (!sessDataObj.Done() && sessDataObj.Playing()) {
-                                return '<i class="fa fa-cog fa-spin fa-3x fa-fw" aria-hidden="true" title="Currently Playing"></i>';
-                            } else if (!sessDataObj.Done() && !sessDataObj.Playing()) {
-                                return '<i class="fa fa-hourglass-half" aria-hidden="true" title="Pending"></i>';
-                            }
-                        });
+                        //sessDataObj.Icon = ko.computed(function () {
+                        //    if (sessDataObj.Done()) {
+                        //        return '<i class="fa fa-check-square-o" aria-hidden="true" title="Done Playing"></i>';
+                        //    } else if (!sessDataObj.Done() && sessDataObj.Playing()) {
+                        //        return '<i class="fa fa-cog fa-spin fa-3x fa-fw" aria-hidden="true" title="Currently Playing"></i>';
+                        //    } else if (!sessDataObj.Done() && !sessDataObj.Playing()) {
+                        //        return '<i class="fa fa-hourglass-half" aria-hidden="true" title="Pending"></i>';
+                        //    }
+                        //});
 
-                        sessionData.push(sessDataObj);
+                        //sessionData.push(sessDataObj);
                     }
 
                     self.MoveList.push(outputObj);
@@ -378,7 +476,9 @@
 
                     console.log("Session " + output.Session + ", Count = " + output.Moves.length + ", Done = " + output.Done);
 
-                    self.StartGame(self.StartGame() ? false : true);
+                    if (!IS_HEAD_TO_HEAD) {
+                        self.StartGame(self.StartGame() ? false : true);
+                    }
 
                 } else {
                     console.log("not my request");
@@ -387,12 +487,18 @@
             };
 
             client.connect({
-                keepAliveInterval: 600, // 10mins (60s*10)
+                keepAliveInterval: 1800,
+                timeout: 10000,
+                onFailure: function (fl) {
+                    console.log(fl.errorMessage);
+                },
                 onSuccess: function () {
+
+                    $(".view-chart").hide();
 
                     disableSettingsControls(true);
 
-                    $("#loadingMaze").text("Loading maze....");
+                    $("#loadingMaze").text("Loading data....");
 
                     client.subscribe(userToken + "/mazeMove");
 
@@ -412,6 +518,9 @@
                     });
                 }
             });
+        } catch (exception) {
+            console.log(exception);
+        }
 
     };
 
