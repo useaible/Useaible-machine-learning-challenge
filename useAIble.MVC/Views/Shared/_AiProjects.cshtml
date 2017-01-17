@@ -1,4 +1,4 @@
-﻿
+
 <html>
 <head>
     <meta name="viewport" content="width=device-width" />
@@ -28,8 +28,8 @@
     <script src="~/Scripts/knockout.mapping-latest.js"></script>
     <script src="~/Scripts/knockout-kendo.min.js"></script>
     <script src="~/Scripts/knockout.validation.js"></script>
-    @Html.Raw(File.ReadAllText(Server.MapPath("~/Views/UIComponent/ComponentTemplates.cshtml")))
-    <script src="~/Scripts/UIComponent/app.js"></script>
+    @*@Html.Raw(File.ReadAllText(Server.MapPath("~/Views/UIComponent/ComponentTemplates.cshtml")))*@
+    @*<script src="~/Scripts/UIComponent/app.js"></script>*@
     <script src="~/Scripts/bootbox.min.js"></script>
     <!--END UI COMPONENTS-->
 </head>
@@ -39,7 +39,7 @@
         <div class="container-fluid">
             <!-- Brand and toggle get grouped for better mobile display -->
             <div class="navbar-header">
-                <a class="navbar-brand" href="@Url.Action("index")"><img class="site-logo" src="/Content/img/logo2.png" alt="UseAIble"></a>
+                <a class="navbar-brand" href="http://useaible.com"><img class="site-logo" src="/Content/img/logo2.png" alt="UseAIble"></a>
                 <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
                     <span class="sr-only">Toggle navigation</span>
                     <span class="icon-bar"></span>
@@ -54,14 +54,14 @@
                     <div class="aps-group-horizontal">
                         <div class="aps-each-icon icon-1-1" style="margin:px;" data-aps-tooltip="Facebook" data-aps-tooltip-enabled="1" data-aps-tooltip-bg="#000" data-aps-tooltip-color="#fff">
                             <a href="https://www.facebook.com/Useaible-695612927231693/" target="_blank" class="aps-icon-link animated aps-tooltip" data-animation-class="">
-                                <img src="http://localhost:8383/useaible/wp-content/plugins/accesspress-social-icons/icon-sets/png/set1/facebook.png" alt="Facebook">
+                                <img src="http://useaible.com/wp-content/plugins/accesspress-social-icons/icon-sets/png/set7/facebook.png" alt="Facebook">
                             </a>
                             <span class="aps-icon-tooltip aps-icon-tooltip-bottom" style="background-color: rgb(0, 0, 0); color: rgb(255, 255, 255); margin-top: -10px; margin-left: -25.5px; display: none;">Facebook</span>
                         </div>
 
-                        <div class="aps-each-icon icon-1-2" style="margin:px;" data-aps-tooltip="Google+" data-aps-tooltip-enabled="1" data-aps-tooltip-bg="#000" data-aps-tooltip-color="#fff">
+                        @*<div class="aps-each-icon icon-1-2" style="margin:px;" data-aps-tooltip="Google+" data-aps-tooltip-enabled="1" data-aps-tooltip-bg="#000" data-aps-tooltip-color="#fff">
                             <a href="https://plus.google.com/u/0/114715270454227924237" target="_blank" class="aps-icon-link animated aps-tooltip" data-animation-class="">
-                                <img src="http://localhost:8383/useaible/wp-content/plugins/accesspress-social-icons/icon-sets/png/set1/googlePlus.png" alt="Google+">
+                                <img src="http://useaible.com/wp-content/plugins/accesspress-social-icons/icon-sets/png/set1/googlePlus.png" alt="Google+">
                             </a>
                             <span class="aps-icon-tooltip aps-icon-tooltip-bottom" style="display: none; background-color: rgb(0, 0, 0); color: rgb(255, 255, 255); margin-top: -10px; margin-left: -23px;">Google+</span>
 
@@ -69,22 +69,20 @@
 
                         <div class="aps-each-icon icon-1-3" style="margin:px;" data-aps-tooltip="Instagram" data-aps-tooltip-enabled="1" data-aps-tooltip-bg="#000" data-aps-tooltip-color="#fff">
                             <a href="http://instagram.com/useable_ai" target="_blank" class="aps-icon-link animated aps-tooltip" data-animation-class="">
-                                <img src="http://localhost:8383/useaible/wp-content/plugins/accesspress-social-icons/icon-sets/png/set1/instagram.png" alt="Instagram">
+                                <img src="http://useaible.com/wp-content/plugins/accesspress-social-icons/icon-sets/png/set1/instagram.png" alt="Instagram">
                             </a>
                             <span class="aps-icon-tooltip aps-icon-tooltip-bottom" style="background-color: rgb(0, 0, 0); color: rgb(255, 255, 255); margin-top: -10px; margin-left: -26px; display: none;">Instagram</span>
-                        </div>
+                        </div>*@
 
                         <div class="aps-each-icon icon-1-4" style="margin:px;" data-aps-tooltip="LinkedIN" data-aps-tooltip-enabled="1" data-aps-tooltip-bg="#000" data-aps-tooltip-color="#fff">
                             <a href="https://www.linkedin.com/company/useaible" target="_blank" class="aps-icon-link animated aps-tooltip" data-animation-class="">
-                                <img src="http://localhost:8383/useaible/wp-content/plugins/accesspress-social-icons/icon-sets/png/set1/linkedin.png" alt="LinkedIN">
+                                <img src="http://useaible.com/wp-content/plugins/accesspress-social-icons/icon-sets/png/set7/linkedin.png" alt="LinkedIN">
                             </a>
                             <span class="aps-icon-tooltip aps-icon-tooltip-bottom" style="background-color: rgb(0, 0, 0); color: rgb(255, 255, 255); margin-top: -10px; margin-left: -25.5px; opacity: 1; display: none;">LinkedIN</span>
-
                         </div>
-
                         <div class="aps-each-icon icon-1-5" style="margin:px;" data-aps-tooltip="Twitter" data-aps-tooltip-enabled="1" data-aps-tooltip-bg="#000" data-aps-tooltip-color="#fff">
                             <a href="http://twitter.com/useaible" target="_blank" class="aps-icon-link animated aps-tooltip" data-animation-class="">
-                                <img src="http://localhost:8383/useaible/wp-content/plugins/accesspress-social-icons/icon-sets/png/set1/twitter.png" alt="Twitter">
+                                <img src="http://useaible.com/wp-content/plugins/accesspress-social-icons/icon-sets/png/set7/twitter.png" alt="Twitter">
                             </a>
                             <span class="aps-icon-tooltip aps-icon-tooltip-bottom" style="background-color: rgb(0, 0, 0); color: rgb(255, 255, 255); margin-top: -10px; margin-left: -19.5px; opacity: 1; display: none;">Twitter</span>
 
@@ -92,7 +90,7 @@
 
                         <div class="aps-each-icon icon-1-6" style="margin:px;" data-aps-tooltip="YouTube" data-aps-tooltip-enabled="1" data-aps-tooltip-bg="#000" data-aps-tooltip-color="#fff">
                             <a href="https://www.youtube.com/channel/UCHL3laTt3LdlgvGAykHmotA" target="_blank" class="aps-icon-link animated aps-tooltip" data-animation-class="">
-                                <img src="http://localhost:8383/useaible/wp-content/plugins/accesspress-social-icons/icon-sets/png/set1/youtube.png" alt="YouTube">
+                                <img src="http://useaible.com/wp-content/plugins/accesspress-social-icons/icon-sets/png/set7/youtube.png" alt="YouTube">
                             </a>
                             <span class="aps-icon-tooltip aps-icon-tooltip-bottom" style="background-color: rgb(0, 0, 0); color: rgb(255, 255, 255); margin-top: -10px; margin-left: -24px; opacity: 1; display: none;">YouTube</span>
                         </div>
@@ -101,7 +99,7 @@
                 </div>
             </div>
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                <ul class="nav navbar-nav">
+                @*<ul class="nav navbar-nav">
                     <li>
                         <a href="http://useaible.com/">Home</a>
                     </li>
@@ -116,6 +114,26 @@
                     </li>
                     <li>
                         <a href="http://useaible.com//contact">Contact Us</a>
+                    </li>
+                </ul>*@
+                <ul class="nav navbar-nav">
+                    <li>
+                        <a href="http://useaible.com/what-is-useaible/">What Is UseA<span style="font-family: 'Arvo', serif;">I</span>ble</a>
+                    </li>
+                    <li>
+                        <a href="http://useaible.com/machine-learning-challenge/">Machine Learning Challenge</a>
+                    </li>
+                    <li>
+                        <a href="http://useaible.com/about">About Us</a>
+                    </li>
+                    <li>
+                        <a href="http://useaible.com/FAQ/">FAQ</a>
+                    </li>
+                    <li>
+                        <a href="http://useaible.com/category/running-with-scissors/">Blog</a>
+                    </li>
+                    <li>
+                        <a href="http://useaible.com/contact">Contact Us</a>
                     </li>
                 </ul>
             </div><!-- /.navbar-collapse -->
@@ -205,6 +223,25 @@
            $(".list-group list-group-item").addClass("active");
         }*@
     });
+
+    // useAIble local and remote url/port
+    var LOCAL_URL = "122.53.51.247";
+    var DEV_URL = "dev.useaible.com";
+    var ACTIVE_MQ_PORT = 61614;
+
+    // open mqtt broker
+    var OPEN_URL = "broker.mqttdashboard.com";
+    var OPEN_PORT = 8000;
+
+    // used in games
+    var MQTT_URL = LOCAL_URL;
+    var MQTT_PORT = ACTIVE_MQ_PORT;
+
+    var client;
+    var client2;
+    var client3;
+
+
 </script>
 
 
