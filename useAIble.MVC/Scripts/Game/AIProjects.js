@@ -1,4 +1,4 @@
-﻿//function testing() {
+//function testing() {
 //    alert("testing is working");
 //}
 $(function () {
