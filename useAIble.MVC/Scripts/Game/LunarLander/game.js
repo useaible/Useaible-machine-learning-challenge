@@ -1,4 +1,4 @@
-﻿//lander image
+//lander image
 var shipImage = new Image();
 //shipImage.src = "/Content/img/lunarLander/lander.png";
 shipImage.src = "/Content/img/lunarLander/newLander.svg";
@@ -242,17 +242,19 @@ function NewMainVM() {
     self.initialize = function () {
         if (self.headTohead()) {
             $.each(self.Games(), function (v, game) {
-                game.spaceShip().altitude(self.SelectAltitude());
+                game.spaceShip().altitude(self.SelectedAltitude());
                 game.spaceShip().fuel(self.SelectFuel());
                 resetGame(game);
                 drawGame(game);
+                updateGameStatus(game);
             });
         }
         else {
-            self.game().spaceShip().altitude(self.SelectAltitude());
+            self.game().spaceShip().altitude(self.SelectedAltitude());
             self.game().spaceShip().fuel(self.SelectFuel());
             resetGame(self.game());
             drawGame(self.game());
+            updateGameStatus(self.game());
         }
         //self.spaceShip().altitude(self.SelectAltitude());
         //self.spaceShip().fuel(self.SelectFuel());
@@ -260,10 +262,16 @@ function NewMainVM() {
     }
 
     self.AltitudeOptions = ko.observableArray([{ Value: 10000, Name: "10,000m" }, { Value: 5000, Name: "5,000m" }, { Value: 3000, Name: "3,000m" }, { Value: 1000, Name: "1,000m" }, { Value: 500, Name: "500m" }, { Value: 100, Name: "100m" }]);
-    self.SelectAltitude = ko.observable();
+    self.SelectAltitude = ko.observable(self.AltitudeOptions()[1]);
+    self.SelectAltitude.subscribe(function (val) {
+        console.log(val);
+    });
+    self.SelectedAltitude = ko.computed(function () {
+        return self.SelectAltitude().Value;
+    });
 
     self.FuelOptions = ko.observableArray([200, 100, 50, 20]);
-    self.SelectFuel = ko.observable();
+    self.SelectFuel = ko.observable(self.FuelOptions()[1]);
 
     self.PlayerOptions = ko.observableArray([
            { Id: 1, Name: "Human"
@@ -286,6 +294,23 @@ function NewMainVM() {
         }
         else {
             self.NumberOfSessions(100);
+
+            if (val.Name == 'useAIble') {
+                //$("#player-options-dropdown").notify("Before you start, we wanted to set your expectations that when useAIble plays the Lunar Lander game, \n" +
+                //    "there will be a bit of wait time as it secures and stores data in our database. \n" +
+                //    "As we are in our early stages, we want to continue improving performance as we move forward with better hardware. \n" +
+                //    "Thank you for bearing with us.", {
+                //    clickToHide: true,
+                //    autoHide: false,
+                //    className: 'warn',
+                //    autoHideDelay: 7000,
+                //    elementPosition: 'top left',
+                //    style: 'bootstrap'
+                //    });
+
+                //$("[data-notify-text=]").html('<span>Before you start, we wanted to set your expectations that when <span style="text-decoration:underline;color:blue;">useAIble</span> plays</span>');
+                //$("[data-notify-text=]").css('font-size', '10px');
+            }
         }
  
         //var game1 = self.Games()[0];
@@ -317,7 +342,15 @@ function NewMainVM() {
 
     });
 
+    var minimizeSettings = function () {
+        $(".sidebarPanel, .newSideBar").addClass("minimized");
+        $(".sidebarPanel .panel-body, .newSideBar .panel-body").fadeOut("slow", "linear");
+    };
+
     self.StartGame = function () {
+
+        self.GameQueue([]);
+
         if (self.headTohead() == false) {
             //self.game(new GameVM());
             //self.Games.push(self.game());
@@ -339,10 +372,14 @@ function NewMainVM() {
                     startGame(self.PlayerOptions()[1], game1);
                     startGame(self.PlayerOptions()[2], game2);
 
+                    minimizeSettings();
+
                 } else if (h2h == 'useAIble-encog') {
 
                     startGame(self.PlayerOptions()[1], game1);
                     startGame(self.PlayerOptions()[3], game3);
+
+                    minimizeSettings();
 
                 }
             }
@@ -354,39 +391,94 @@ function NewMainVM() {
         //return self.spaceShip().sessionScores();
     });
 
-    self.GameQueue = ko.computed(function () {
-        if (self.headTohead() != undefined && !self.headTohead()) {
-           return self.game().spaceShip().gameQueue();
-        } else if(self.headTohead() != undefined && self.headTohead()) {
-            //$.each(self.Games(), function (i, game) {
+    //self.GameQueue = ko.computed(function () {
+
+    //    if (self.headTohead() != undefined && !self.headTohead()) {
+    //       return self.game().spaceShip().gameQueue();
+    //    } else if(self.headTohead() != undefined && self.headTohead()) {
+    //        //$.each(self.Games(), function (i, game) {
                 
-            //});
+    //        //});
 
-            var game1 = self.Games()[0];
-            var game2 = self.Games()[1];
-            var game3 = self.Games()[2];
+    //        var game1 = self.Games()[0];
+    //        var game2 = self.Games()[1];
+    //        var game3 = self.Games()[2];
             
-            var queue1 = game1.spaceShip().gameQueue();
-            var queue2 = game2.spaceShip().gameQueue();
-            var queue3 = game3.spaceShip().gameQueue();
+    //        var queue1 = game1.spaceShip().gameQueue();
+    //        var queue2 = game2.spaceShip().gameQueue();
+    //        var queue3 = game3.spaceShip().gameQueue();
 
-            var newGameQueue = ko.observableArray();
+    //        var newGameQueue = ko.observableArray();
 
-            $.each(queue1, function (i, game) {
-                //game.Type = ko.observable('useAIble');
-                newGameQueue.push(game);
-            });
-            $.each(queue2, function (i, game) {
-                //game.Type = ko.observable('tensorFlow');
-                newGameQueue.push(game);
-            });
+    //        $.each(queue1, function (i, game) {
+    //            //game.Type = ko.observable('useAIble');
+    //            newGameQueue.push(game);
+    //        });
+    //        $.each(queue2, function (i, game) {
+    //            //game.Type = ko.observable('tensorFlow');
+    //            newGameQueue.push(game);
+    //        });
 
-            $.each(queue3, function (i, game) {
-                //game.Type = ko.observable('tensorFlow');
-                newGameQueue.push(game);
-            });
+    //        $.each(queue3, function (i, game) {
+    //            //game.Type = ko.observable('tensorFlow');
+    //            newGameQueue.push(game);
+    //        });
 
-            return newGameQueue();
+    //        return newGameQueue();
+    //    }
+    //});
+
+    self.GameQueue = ko.computed({
+        read: function () {
+            if (self.headTohead() != undefined && !self.headTohead()) {
+                return self.game().spaceShip().gameQueue();
+            } else if (self.headTohead() != undefined && self.headTohead()) {
+                //$.each(self.Games(), function (i, game) {
+
+                //});
+
+                var game1 = self.Games()[0];
+                var game2 = self.Games()[1];
+                var game3 = self.Games()[2];
+
+                var queue1 = game1.spaceShip().gameQueue();
+                var queue2 = game2.spaceShip().gameQueue();
+                var queue3 = game3.spaceShip().gameQueue();
+
+                var newGameQueue = ko.observableArray();
+
+                $.each(queue1, function (i, game) {
+                    //game.Type = ko.observable('useAIble');
+                    newGameQueue.push(game);
+                });
+                $.each(queue2, function (i, game) {
+                    //game.Type = ko.observable('tensorFlow');
+                    newGameQueue.push(game);
+                });
+
+                $.each(queue3, function (i, game) {
+                    //game.Type = ko.observable('tensorFlow');
+                    newGameQueue.push(game);
+                });
+
+                return newGameQueue();
+            }
+        },
+        write: function (value) {
+            if (self.headTohead() != undefined && !self.headTohead()) {
+
+                self.game().spaceShip().gameQueue(value);
+
+            } else if (self.headTohead() != undefined && self.headTohead()) {
+
+                var game1 = self.Games()[0];
+                var game2 = self.Games()[1];
+                var game3 = self.Games()[2];
+
+                game1.spaceShip().gameQueue([]);
+                game2.spaceShip().gameQueue([]);
+                game3.spaceShip().gameQueue([]);
+            }
         }
     });
 
@@ -441,11 +533,11 @@ function NewMainVM() {
     self.ShowHeadToHeadOptions = ko.observable(false);
     self.SelectedHeadToHeadOption.subscribe(function (selectedHeadToHead) {
 
-        $("#selected-head2head-options-hidden-input-lander").val(selectedHeadToHead.Id);
+        //$("#selected-head2head-options-hidden-input-lander").val(selectedHeadToHead.Id);
 
         if (selectedHeadToHead) {
 
-            //$("#selected-head2head-options-hidden-input-lander").val(selectedHeadToHead.Id);
+            $("#selected-head2head-options-hidden-input-lander").val(selectedHeadToHead.Id);
 
             getSelectedHead2HeadOption();
 
@@ -468,8 +560,14 @@ function NewMainVM() {
     self.NumSessionRandomness = ko.observable(self.NumberOfSessions());
 
     self.NumberOfSessions.subscribe(function (val) {
-        
+
         self.NumSessionRandomness(val);
+
+        if (val > 1000) {
+            self.NumberOfSessions(1000);
+
+            self.NumSessionRandomness(1000);
+        }
 
         self.NetworkSettings([]);
 
@@ -593,6 +691,16 @@ function NewMainVM() {
     self.TensorFlowDonePlaying = ko.observable(true);
     self.EncogDonePlaying = ko.observable(true);
 
+    self.useAIbleCurrentGameDonePlaying = ko.observable(false);
+    self.TensorFlowCurrentGameDonePlaying = ko.observable(false);
+    self.EncogCurrentGameDonePlaying = ko.observable(false);
+
+    self.useAIbleStarted = ko.observable(false);
+    self.TensorFlowStarted = ko.observable(false);
+    self.EncogStarted = ko.observable(false);
+
+    self.NewGameTrigger = ko.observable(false);
+
     self.DonePlaying = ko.computed(function () {
         if (self.headTohead() != undefined && self.headTohead()) {
 
@@ -684,22 +792,23 @@ function NewMainVM() {
     self.FromChartPage = ko.observable(0);
     self.ToChartPage = ko.observable(99);
 
+    self.CurrentPage = ko.observable(1);
+
     self.PreviousChartPage = function () {
-        if (self.FromChartPage() > 0) {
-            self.FromChartPage(self.FromChartPage() - 99);
-            self.ToChartPage(self.FromChartPage() + 99);
+
+        if (self.CurrentPage() > 1) {
+            self.CurrentPage(self.CurrentPage() - 1);
         }
+
         showComparisonChart(self.GameQueue());
     };
 
     self.NextChartPage = function () {
 
-        var sessions = eval($("#sessionInput").val());
-
-        if (self.ToChartPage() < sessions) {
-            self.FromChartPage(self.ToChartPage());
-            self.ToChartPage(self.ToChartPage() + 99);
+        if (self.CurrentPage() < CHART_PAGES_COUNT) {
+            self.CurrentPage(self.CurrentPage() + 1);
         }
+
         showComparisonChart(self.GameQueue());
     };
 
@@ -720,6 +829,10 @@ function NewMainVM() {
     self.useAIbleShowChartBtn = ko.observable(false);
     self.TensorFlowShowChartBtn = ko.observable(false);
     self.EncogShowChartBtn = ko.observable(false);
+
+    self.useAIbleLogisticLowestCostAtSession = ko.observable();
+    self.TensorFlowLogisticLowestCostAtSession = ko.observable();
+    self.EncogLogisticLowestCostAtSession = ko.observable();
 
     self.ShowChartBtn = ko.computed(function () {
         if (self.SelectedPlayerOption().Name == 'Head-To-Head') {
@@ -851,6 +964,55 @@ function NewMainVM() {
 
 
     self.IsLogistic = ko.observable(false);
+    self.ReplayGame = function (player, e_game) {
+
+        var gameHouse;
+
+        if (player == 'useAIble') {
+
+            gameHouse = self.Games()[0];
+
+        } else if (player == 'tensorflow') {
+
+            gameHouse = self.Games()[1];
+
+        } else if (player == 'encog') {
+
+            gameHouse = self.Games()[2];
+        }
+
+        console.log(e_game);
+
+        var gameCounter = 0;
+        var results = e_game.Data;
+        var outputLen = results.length;
+
+        var start = function () {
+
+            setTimeout(function () {
+
+
+                var thrust = results[gameCounter];
+                gameHouse.spaceShip().thrust(thrust);
+
+                runGame(gameHouse);
+
+                gameCounter++;
+
+                if (gameCounter < outputLen) {
+                    start();
+                }
+                else if (gameCounter == outputLen) {
+                    resetGame(gameHouse);
+                }
+
+            }, 100);
+        };
+
+        start();
+
+
+    };
 }
 
 function GameVM() {
@@ -863,7 +1025,7 @@ function GameVM() {
     self.spaceShip = ko.observable({
         x: ko.observable(horizonalAlignment),
         y: ko.observable(0),
-        altitude: ko.observable(mainVM.SelectAltitude()),
+        altitude: ko.observable(mainVM.SelectedAltitude()),
         width: ko.observable(20),
         height: ko.observable(20),
         fuel: ko.observable(mainVM.SelectFuel()),
@@ -882,8 +1044,10 @@ function GameVM() {
     mainVM.IdArray.push(self.Id());
     $(".lunarLander").remove();
 
+    self.steps = ko.observable(0);
+
     self.spaceShip().score = ko.computed(function () {
-        return Math.round((self.spaceShip().fuel() * 10) + steps + (self.spaceShip().velocity() * 1000));
+        return Math.round((self.spaceShip().fuel() * 10) + self.steps() + (self.spaceShip().velocity() * 1000));
     });
 
     self.spaceShip().flying = ko.computed(function () {
@@ -892,11 +1056,16 @@ function GameVM() {
 
     self.sessions = ko.observable(1);
 
+    self.gameStatus = ko.observable("");
+    self.nextSession = ko.observable("");
+    self.timeElapse = ko.observable("");
+    self.currentPlayer = ko.observable("");
+
 }
 
 function stepsTurn(gameVM) {
 
-    steps++;
+    gameVM.steps(gameVM.steps() + 1);
     gameVM.spaceShip().velocity(gameVM.spaceShip().velocity() - GRAVITY);
     gameVM.spaceShip().altitude(gameVM.spaceShip().altitude() + gameVM.spaceShip().velocity());
 
@@ -922,7 +1091,7 @@ function stepsTurn(gameVM) {
             gameVM.spaceShip().shipStatus("Crashed");
         } else {
             gameVM.spaceShip().shipStatus("successful");
-            landingSuccessful.play();
+            //landingSuccessful.play();
         }
         clearInterval(running);
 
@@ -936,12 +1105,12 @@ function crashDetector(gameVM) {
     if (gameVM.spaceShip().altitude() === 0 && gameVM.spaceShip().velocity() < -20) {
         gameVM.spaceShip().currentSprite(shipImage.width / 2);
         gameVM.spaceShip().crashed(true);
-        crashSound.play();
+        //crashSound.play();
     }
     if (gameVM.spaceShip().altitude() === 0 && gameVM.spaceShip().velocity() > -20 && gameVM.spaceShip().velocity() < -10) {
         gameVM.spaceShip().currentSprite(((shipImage.width / 2) + (shipImage.width / 4)));
         gameVM.spaceShip().crashed(true);
-        crashSound.play();
+        //crashSound.play();
     }
 }
 
@@ -957,36 +1126,87 @@ function drawSpaceship(gameVM) {
     shipMoving(gameVM);
     if (gameVM.spaceShip().thrust() === false || gameVM.spaceShip().altitude() === 0 || gameVM.spaceShip().fuel() === 0) {
         gameVM.spaceShip().currentSprite(0);
-        thrusterSound.pause();
+        //thrusterSound.pause();
     } else {
         gameVM.spaceShip().currentSprite(shipImage.width / 4);
         //thrusterSound.muted = false;
-        thrusterSound.play();
+        //thrusterSound.play();
     }
     crashDetector(gameVM);
     gameVM.canvasContext().drawImage(shipImage, gameVM.spaceShip().currentSprite(), 0, shipImage.width / 4, shipImage.height, gameVM.spaceShip().x(), gameVM.spaceShip().y(), gameVM.spaceShip().calculatedWidth(), gameVM.spaceShip().calculatedHeight());
 }
 
 function informationBoard(gameVM) {
+
+    var XPOS_SUBTRAHEND_TXT = 240;
+    var XPOS_SUBTRAHEND_BOX = 250;
+
     var altitude = parseInt(gameVM.spaceShip().y())
+
+    var boxX = gameVM.canvasContext().canvas.width - XPOS_SUBTRAHEND_BOX;
+    var boxWidth = 230;
+
+    var boxDistance = boxWidth + boxX;
+    var boxMidDistance = boxWidth / 2;
+
+    var boxCenter = (boxDistance - boxMidDistance) - 50;
+
+
     gameVM.canvasContext().fillStyle = 'rgba(225,225,225,0.5)'
-    gameVM.canvasContext().fillRect(gameVM.canvasContext().canvas.width - 220, 20, 200, 200);
-    gameVM.canvasContext().font = '15pt Courier New';
+    gameVM.canvasContext().fillRect(gameVM.canvasContext().canvas.width - XPOS_SUBTRAHEND_BOX, 20, 230, 262);
+    gameVM.canvasContext().font = '12pt Courier New';
     gameVM.canvasContext().fillStyle = "white";
-    gameVM.canvasContext().fillText("Information", gameVM.canvasContext().canvas.width - 210, 50);
-    gameVM.canvasContext().font = '10pt Courier New';
+    gameVM.canvasContext().fillText("Information", boxCenter, 40);
+    gameVM.canvasContext().font = '8pt Courier New';
     gameVM.canvasContext().fillStyle = "white";
     //ctx.fillText("Altitude: " + ((HEIGHT - spaceShip.height) - altitude), ctx.canvas.width - 210, 70);
-    gameVM.canvasContext().fillText("Session(s): " + gameVM.sessions(), gameVM.canvasContext().canvas.width - 210, 150);
-    gameVM.canvasContext().fillText("Altitude: " + parseFloat(gameVM.spaceShip().altitude()).toFixed(2), gameVM.canvasContext().canvas.width - 210, 70);
+    gameVM.canvasContext().fillText("Session(s): " + gameVM.sessions(), gameVM.canvasContext().canvas.width - XPOS_SUBTRAHEND_TXT, 150);
+    gameVM.canvasContext().fillText("Altitude: " + parseFloat(gameVM.spaceShip().altitude()).toFixed(2), gameVM.canvasContext().canvas.width - XPOS_SUBTRAHEND_TXT, 70);
 
-    gameVM.canvasContext().fillText("Fuel: " + gameVM.spaceShip().fuel(), gameVM.canvasContext().canvas.width - 210, 90);
-    gameVM.canvasContext().fillText("Steps: " + steps, gameVM.canvasContext().canvas.width - 210, 110);
-    gameVM.canvasContext().fillText("Velocity: " + parseFloat(gameVM.spaceShip().velocity()).toFixed(2) + " m/s", gameVM.canvasContext().canvas.width - 210, 130);
-    gameVM.canvasContext().fillText("Score: " + parseInt(gameVM.spaceShip().score()), gameVM.canvasContext().canvas.width - 210, 170);
-    gameVM.canvasContext().fillText("Landing: " + gameVM.spaceShip().shipStatus(), gameVM.canvasContext().canvas.width - 210, 190);
+    gameVM.canvasContext().fillText("Fuel: " + gameVM.spaceShip().fuel(), gameVM.canvasContext().canvas.width - XPOS_SUBTRAHEND_TXT, 90);
+    gameVM.canvasContext().fillText("Steps: " + gameVM.steps(), gameVM.canvasContext().canvas.width - XPOS_SUBTRAHEND_TXT, 110);
+    gameVM.canvasContext().fillText("Velocity: " + parseFloat(gameVM.spaceShip().velocity()).toFixed(2) + " m/s", gameVM.canvasContext().canvas.width - XPOS_SUBTRAHEND_TXT, 130);
+    gameVM.canvasContext().fillText("Score: " + parseInt(gameVM.spaceShip().score()), gameVM.canvasContext().canvas.width - XPOS_SUBTRAHEND_TXT, 170);
+    gameVM.canvasContext().fillText("Landing: " + gameVM.spaceShip().shipStatus(), gameVM.canvasContext().canvas.width - XPOS_SUBTRAHEND_TXT, 190);
+
+    //gameVM.canvasContext().fillRect(gameVM.canvasContext().canvas.width - XPOS_SUBTRAHEND_BOX, 200, 230, 2);
+    //gameVM.canvasContext().fillText("Status: " + gameVM.gameStatus(), gameVM.canvasContext().canvas.width - XPOS_SUBTRAHEND_TXT, 220);
+    //gameVM.canvasContext().fillText("Session: " + gameVM.nextSession(), gameVM.canvasContext().canvas.width - XPOS_SUBTRAHEND_TXT, 240);
+    //gameVM.canvasContext().fillText("Elapse: " + gameVM.timeElapse(), gameVM.canvasContext().canvas.width - XPOS_SUBTRAHEND_TXT, 260);
 
     CURRENT_ALTITUDE = gameVM.spaceShip().altitude();
+}
+
+function updateGameStatus(gameVM) {
+
+    var XPOS_SUBTRAHEND_TXT = 240;
+    var XPOS_SUBTRAHEND_BOX = 250;
+
+    var boxX = gameVM.canvasContext().canvas.width - XPOS_SUBTRAHEND_BOX;
+    var boxWidth = 230;
+
+    var boxDistance = boxWidth + boxX;
+    var boxMidDistance = boxWidth / 2;
+
+    var boxCenter = (boxDistance - boxMidDistance) - 50;
+
+    //gameVM.canvasContext().clearRect(gameVM.canvasContext().canvas.width - XPOS_SUBTRAHEND_BOX, 200, 230, 100);
+    gameVM.canvasContext().fillRect(gameVM.canvasContext().canvas.width - XPOS_SUBTRAHEND_BOX, 200, 230, 2);
+    gameVM.canvasContext().rect(gameVM.canvasContext().canvas.width - XPOS_SUBTRAHEND_BOX, 200, 232, 80);
+
+    gameVM.canvasContext().fillStyle = 'orange';
+    gameVM.canvasContext().fillRect(gameVM.canvasContext().canvas.width - XPOS_SUBTRAHEND_BOX, 201, 230, 85);
+
+    gameVM.canvasContext().font = '10pt Courier New';
+    gameVM.canvasContext().fillStyle = "black";
+
+    gameVM.canvasContext().fillText("Game Status", boxCenter, 217);
+
+    gameVM.canvasContext().font = '8pt Courier New';
+    gameVM.canvasContext().fillText("Player: " + gameVM.currentPlayer(), gameVM.canvasContext().canvas.width - XPOS_SUBTRAHEND_TXT, 235);
+    gameVM.canvasContext().fillText("Status: " + gameVM.gameStatus(), gameVM.canvasContext().canvas.width - XPOS_SUBTRAHEND_TXT, 255);
+    //gameVM.canvasContext().fillText(gameVM.nextSession(), gameVM.canvasContext().canvas.width - XPOS_SUBTRAHEND_TXT, 275);
+    gameVM.canvasContext().fillText("Wait Time: " + gameVM.timeElapse(), gameVM.canvasContext().canvas.width - XPOS_SUBTRAHEND_TXT, 275);
 }
 
 //draw game
@@ -997,6 +1217,8 @@ function drawGame(gameVM) {
     aboveNormalAltitude(gameVM);
     informationBoard(gameVM);
     drawSpaceship(gameVM);
+
+    updateGameStatus(gameVM);
 }
 
 function aboveNormalAltitude(gameVM) {
@@ -1040,6 +1262,9 @@ function startGame(type, gameVM) {
     var NUM_SESSION_RANDOMNESS = mainVM.NumSessionRandomness();//eval($("#sessionRandomnessInput").val());
 
 
+    //gameVM.spaceShip().gameQueue([]);
+
+
         if (type.Name == "Human") {
             // human player
             playAsHuman();
@@ -1057,6 +1282,9 @@ function startGame(type, gameVM) {
             mainVM.ReplayButton(true);
             mainVM.useAIbleDonePlaying(false);
 
+            mainVM.useAIbleCurrentGameDonePlaying(false);
+            mainVM.useAIbleStarted(false);
+
             mq = new MQSimulator(
                 gameVM.spaceShip(),
                 runGame,
@@ -1072,7 +1300,10 @@ function startGame(type, gameVM) {
                 mainVM.WaitTimeElapseUseAible,
                 mainVM.Played,
                 mainVM.useAIbleShowChartBtn,
-                showComparisonChart, mainVM.GameQueue);
+                showComparisonChart,
+                mainVM.GameQueue,
+                updateGameStatus,
+                mainVM.useAIbleCurrentGameDonePlaying);
 
             mq.GetToken().done(function (res) {
                 mqToken = res;
@@ -1086,10 +1317,14 @@ function startGame(type, gameVM) {
 
                         if (h2hOption == 'useAIble-tensorflow') {
                             mainVM.TensorFlowDonePlaying(false);
-                            mq.Play(mqToken, mainVM.TensorFlowDonePlaying);
+                            mainVM.TensorFlowCurrentGameDonePlaying(false);
+                            mainVM.TensorFlowStarted(false);
+                            mq.Play(mqToken, mainVM.TensorFlowDonePlaying, mainVM.TensorFlowCurrentGameDonePlaying, mainVM.NewGameTrigger, mainVM.useAIbleStarted, mainVM.TensorFlowStarted);
                         } else if (h2hOption == 'useAIble-encog') {
                             mainVM.EncogDonePlaying(false);
-                            mq.Play(mqToken, mainVM.EncogDonePlaying);
+                            mainVM.EncogCurrentGameDonePlaying(false);
+                            mainVM.EncogStarted(false);
+                            mq.Play(mqToken, mainVM.EncogDonePlaying, mainVM.EncogCurrentGameDonePlaying, mainVM.NewGameTrigger, mainVM.useAIbleStarted, mainVM.EncogStarted);
                         }
                     }
                 } else {
@@ -1107,6 +1342,7 @@ function startGame(type, gameVM) {
 
                 mainVM.EnableStartButton(false);
                 mainVM.TensorFlowDonePlaying(false);
+                mainVM.useAIbleDonePlaying(false);
 
                 tfClient = new TensorFlowClient(
                     gameVM.spaceShip(),
@@ -1116,26 +1352,31 @@ function startGame(type, gameVM) {
                     gameVM.sessions,
                     mainVM.SessionWaitText,
                     {
-                        Sessions: NUM_SESSIONS,
-                        Fuel: mainVM.SelectFuel(),
-                        Altitude: mainVM.SelectAltitude(),
-                        RandomActionProb: mainVM.RandomActionProb(),
-                        RandomActionDecay: mainVM.RandomActionDecay(),
-                        Hidden1Size: mainVM.Hidden1Size(),
-                        Hidden2Size: mainVM.Hidden2Size(),
-                        LearningRate: mainVM.LearningRate(),
-                        MiniBatchSize: mainVM.MiniBatchSize(),
-                        DiscountFactor: mainVM.DiscountFactor(),
-                        TargetUpdateFreq: mainVM.TargetUpdateFreq(),
+                        Sessions: eval(NUM_SESSIONS),
+                        Fuel: eval(mainVM.SelectFuel()),
+                        Altitude: eval(mainVM.SelectedAltitude()),
+                        RandomActionProb: eval(mainVM.RandomActionProb()),
+                        RandomActionDecay: eval(mainVM.RandomActionDecay()),
+                        Hidden1Size: eval(mainVM.Hidden1Size()),
+                        Hidden2Size: eval(mainVM.Hidden2Size()),
+                        LearningRate: eval(mainVM.LearningRate()),
+                        MiniBatchSize: eval(mainVM.MiniBatchSize()),
+                        DiscountFactor: eval(mainVM.DiscountFactor()),
+                        TargetUpdateFreq: eval(mainVM.TargetUpdateFreq()),
                         UserToken: token_res.Token
                     },
                     mainVM.EnableStartButton,
                     mainVM.TensorFlowDonePlaying,
                     mainVM.SessionWaitTextTF,
                     mainVM.WaitTimeElapseTF,
-                    mainVM.TensorFlowShowChartBtn);
+                    mainVM.TensorFlowShowChartBtn,
+                    updateGameStatus);
 
-                tfClient.Init();
+                if (mainVM.headTohead()) {
+                    tfClient.Init(mainVM.useAIbleDonePlaying, mainVM.TensorFlowDonePlaying, mainVM.useAIbleCurrentGameDonePlaying, mainVM.TensorFlowCurrentGameDonePlaying, mainVM.NewGameTrigger, mainVM.useAIbleStarted, mainVM.TensorFlowStarted);
+                } else {
+                    tfClient.Init(null, mainVM.TensorFlowDonePlaying);
+                }
             });
 
         } else if (type.Name == "Encog") {
@@ -1179,11 +1420,13 @@ function startGame(type, gameVM) {
                 mainVM.WaitTimeElapseEncog,
                 mainVM.Played,
                 mainVM.EncogShowChartBtn,
-                showComparisonChart, mainVM.GameQueue);
+                showComparisonChart,
+                mainVM.GameQueue,
+                updateGameStatus);
 
             encogLander.GetToken().done(function (res) {
                 if (mainVM.headTohead()) {
-                    encogLander.Play(res, mainVM.useAIbleDonePlaying);
+                    encogLander.Play(res, mainVM.useAIbleDonePlaying, mainVM.useAIbleCurrentGameDonePlaying, mainVM.EncogCurrentGameDonePlaying, mainVM.NewGameTrigger, mainVM.useAIbleStarted, mainVM.EncogStarted);
                 } else {
                     encogLander.Play(res);
                 }
@@ -1216,10 +1459,10 @@ function guid() {
 
 function resetGame(gameVM) {
 
-    gameVM.spaceShip().altitude(mainVM.SelectAltitude());
+    gameVM.spaceShip().altitude(mainVM.SelectedAltitude());
     gameVM.spaceShip().y(0);
     gameVM.spaceShip().fuel(mainVM.SelectFuel());
-    steps = 0;
+    gameVM.steps(0);
     gameVM.spaceShip().velocity(0);
     gameVM.spaceShip().crashed(false);
     gameVM.spaceShip().shipStatus("");
@@ -1253,6 +1496,7 @@ function init() {
             game.canvasContext().canvas.width = 700;
             game.canvasContext().drawImage(bg, 200, 400, 400, 400, 0, 0, game.canvasContext().canvas.width, game.canvasContext().canvas.height);
             drawGame(game);
+            updateGameStatus(game);
         });
     });
 }
@@ -1275,7 +1519,7 @@ function showComparisonChart(gameQueue) {
             useAIbleScores.push(v.Score);
             useAIbleSessions.push(v.Session);
 
-        } else if (v.Type() == 'tensorFlow') {
+        } else if (v.Type() == 'tensorflow') {
 
             tensorFlowScores.push(v.Score);
             tensorFlowSessions.push(v.Session);
@@ -1323,17 +1567,21 @@ function showComparisonChart(gameQueue) {
 
         EncogAvgScore: mainVM.EncogAvgScore,
         EncogHighestScore: mainVM.EncogHighestScore,
-        EncogLearnedAfter: mainVM.EncogLearnedAfter
+        EncogLearnedAfter: mainVM.EncogLearnedAfter,
+
+        useAIbleLogisticLowestCostAtSession: mainVM.useAIbleLogisticLowestCostAtSession,
+        TensorFlowLogisticLowestCostAtSession: mainVM.TensorFlowLogisticLowestCostAtSession,
+        EncogLogisticLowestCostAtSession: mainVM.EncogLogisticLowestCostAtSession
     };
 
     if (mainVM.SelectedPlayerOption().Name == 'Head-To-Head') {
-        createChart(undefined, chartData, mainVM.SelectedChartViewOption(), mainVM.FromChartPage, mainVM.ToChartPage, summary, mainVM.NUMBER_OF_CHART_POINTS, false);
+        createChart(undefined, chartData, mainVM.SelectedChartViewOption(), mainVM.FromChartPage, mainVM.ToChartPage, summary, mainVM.NUMBER_OF_CHART_POINTS, false, mainVM.CurrentPage);
     } else if (mainVM.SelectedPlayerOption().Name == 'useAIble') {
-        createChart('useAIble', chartData, mainVM.SelectedChartViewOption(), mainVM.FromChartPage, mainVM.ToChartPage, summary, mainVM.NUMBER_OF_CHART_POINTS, false);
+        createChart('useAIble', chartData, mainVM.SelectedChartViewOption(), mainVM.FromChartPage, mainVM.ToChartPage, summary, mainVM.NUMBER_OF_CHART_POINTS, false, mainVM.CurrentPage);
     } else if (mainVM.SelectedPlayerOption().Name == 'Tensor Flow') {
-        createChart('tensorFlow', chartData, mainVM.SelectedChartViewOption(), mainVM.FromChartPage, mainVM.ToChartPage, summary, mainVM.NUMBER_OF_CHART_POINTS, false);
+        createChart('tensorFlow', chartData, mainVM.SelectedChartViewOption(), mainVM.FromChartPage, mainVM.ToChartPage, summary, mainVM.NUMBER_OF_CHART_POINTS, false, mainVM.CurrentPage);
     } else if (mainVM.SelectedPlayerOption().Name == 'Encog') {
-        createChart('encog', chartData, mainVM.SelectedChartViewOption(), mainVM.FromChartPage, mainVM.ToChartPage, summary, mainVM.NUMBER_OF_CHART_POINTS, false);
+        createChart('encog', chartData, mainVM.SelectedChartViewOption(), mainVM.FromChartPage, mainVM.ToChartPage, summary, mainVM.NUMBER_OF_CHART_POINTS, false, mainVM.CurrentPage);
     }
 }
 
@@ -1414,6 +1662,38 @@ $(document).ready(function () {
         showComparisonChart(mainVM.GameQueue());
 
     });
+
+    var syncH2H = function () {
+
+        if (mainVM.headTohead()) {
+
+            var h2h = mainVM.SelectedHeadToHeadOption();
+
+            if (h2h) {
+                var h2hOption = h2h.Id;
+
+                if (h2hOption == 'useAIble-tensorflow') {
+
+                    if (mainVM.useAIbleCurrentGameDonePlaying() && mainVM.TensorFlowCurrentGameDonePlaying()) {
+                        mq.StartGame(mq.StartGame() ? false : true);
+                        tfClient.StartGame(tfClient.StartGame() ? false : true);
+                    }
+
+                } else if (h2hOption == 'useAIble-encog') {
+
+                    if (mainVM.useAIbleCurrentGameDonePlaying() && mainVM.EncogCurrentGameDonePlaying()) {
+                        mq.StartGame(mq.StartGame() ? false : true);
+                        encogLander.StartGame(encogLander.StartGame() ? false : true);
+                    }
+
+                }
+            }
+        }
+
+    };
+
+    var h2hSyncHandler = setInterval(syncH2H, 3000);
+
 });
 //human Player Codes
 //keyboard function
@@ -1449,7 +1729,69 @@ function pauseGame() {
 }
 
 $(window).bind('beforeunload', function () {
-    if (!mainVM.EnableStartButton()) {
-        return ' ';
+
+    var player = mainVM.SelectedPlayerOption().Name;
+
+    if (player == 'useAIble') {
+
+        if (!mainVM.useAIbleDonePlaying()) {
+            return ' ';
+        } else {
+            if (client) {
+                client.disconnect();
+            }
+        }
+
+    } else if (player == 'Tensor Flow') {
+
+
+        if (!mainVM.TensorFlowDonePlaying()) {
+            return ' ';
+        } else {
+            if (client2) {
+                client2.disconnect();
+            }
+        }
+
+    } else if (player == 'Encog') {
+
+        if (!mainVM.EncogDonePlaying()) {
+            return ' ';
+        } else {
+            if (client3) {
+                client3.disconnect();
+            }
+        }
+
+    } else if (player == 'Head-To-Head') {
+
+        var h2hPlayer = mainVM.SelectedHeadToHeadOption();
+        if (h2hPlayer) {
+            if (h2hPlayer.Id == 'useAIble-tensorflow') {
+
+                if (!mainVM.useAIbleDonePlaying() || !mainVM.TensorFlowDonePlaying()) {
+                    return ' ';
+                } else {
+                    if (client) {
+                        client.disconnect();
+                    }
+                }
+
+            } else if (h2hPlayer.Id == 'useAIble-encog') {
+
+                if (!mainVM.useAIbleDonePlaying() && !mainVM.EncogDonePlaying()) {
+                    return ' ';
+                } else {
+                    if (client3) {
+                        client3.disconnect();
+                    }
+
+                    if (client3) {
+                        client3.disconnect();
+                    }
+                }
+
+            }
+        }
     }
 });
