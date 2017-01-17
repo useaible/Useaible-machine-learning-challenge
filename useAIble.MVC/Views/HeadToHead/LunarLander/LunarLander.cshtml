@@ -1,4 +1,4 @@
-﻿
+
 @{
     ViewBag.Title = "LunarLander";
     Layout = "~/Views/Shared/_AiProjects.cshtml";
@@ -28,7 +28,7 @@
                             @Html.Partial("PartialViews/LunarLander/_SessionsTab")
                         </div>
                     </div>
-                    <div class="h6" data-bind="with: SelectedPlayerOption">
+                    @*<div class="h6" data-bind="with: SelectedPlayerOption">
                         <div id="mainWaitingDiv" data-bind="visible: Name != 'Head-To-Head'">
                             <div data-bind="visible: $root.DonePlaying() == false">
                                 <label>Waiting Results</label><br />
@@ -40,7 +40,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div>*@
                     @*<div data-bind="visible: EnableStartButton() == false, progress: { value: 100, type: 'info', text: SessionWaitText, textHidden: true, animated: true, striped: true }"></div>*@
                 </div>
             </div>
@@ -81,6 +81,10 @@
 @*<script src="~/Scripts/Game/AIProjects.js"></script>*@
 @*<script src="~/Scripts/Game/LunarLander/lunarLander.js"></script>*@
 <script>
+
+    var client;
+    var client2;
+    var client3;
 
 </script>
 
