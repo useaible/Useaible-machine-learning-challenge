@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewBag.Title = "BeerDistribution";
     Layout = "~/Views/Shared/_AiProjects.cshtml";
 }
@@ -249,6 +249,10 @@
 
 <script>
 
+    var USEAIBLE_USER_TOKEN;
+    var TF_USER_TOKEN;
+    var LOGISTIC_USER_TOKEN;
+
     var ctx;
     var tensorflowCtx;
     var encogCtx;
@@ -273,6 +277,71 @@
             mainVM.ShowComparisonChart(mainVM.SessionData());
 
         });
+
+        var syncH2H = function () {
+
+            if (mainVM.HeadToHeadSelected()) {
+
+                var useAIble = mainVM.useAIbleSimulator();
+                var tensorflow = mainVM.TensorFlowSimulator();
+                var encog = mainVM.EncogSimulator();
+
+                var h2h = mainVM.SelectedHeadToHeadOption();
+
+                if (h2h) {
+                    var h2hOption = h2h.Id;
+
+                    if (h2hOption == 'useAIble-tensorflow') {
+
+                        var useAIbleLogistics = mainVM.useAIbleSimulator().Logistics();
+                        var tfLogistics = mainVM.TensorFlowSimulator().Logistics();
+
+                        var useAIbleLogisticsPlayer = useAIbleLogistics[mainVM.SessionToPlay()];
+                        var tfLogisticPlayer = tfLogistics[mainVM.SessionToPlay()];
+
+                        var hasPlayer = useAIbleLogisticsPlayer && tfLogisticPlayer;
+
+                        if (hasPlayer) {
+                            if (mainVM.useAIbleCurrentGameDonePlaying() && mainVM.TensorFlowCurrentGameDonePlaying()) {
+
+                                mainVM.useAIbleSimulator().StartSync(useAIbleLogisticsPlayer);
+                                mainVM.TensorFlowSimulator().StartSync(tfLogisticPlayer);
+
+                                mainVM.SessionToPlay(mainVM.SessionToPlay() + 1);
+                            }
+                        }
+                    } else if (h2hOption == 'useAIble-encog') {
+
+                        var useAIbleLogistics = mainVM.useAIbleSimulator().Logistics();
+                        var encogLogistics = mainVM.EncogSimulator().Logistics();
+
+                        var useAIbleLogisticsPlayer = useAIbleLogistics[mainVM.SessionToPlay()];
+                        var encogLogisticPlayer = encogLogistics[mainVM.SessionToPlay()];
+
+                        var hasPlayer = (useAIbleLogisticsPlayer || mainVM.useAIbleDonePlaying()) && (encogLogisticPlayer || mainVM.EncogDonePlaying());
+
+                        if (hasPlayer) {
+                            if ((mainVM.useAIbleCurrentGameDonePlaying()) && (mainVM.EncogCurrentGameDonePlaying())) {
+
+                                if (!mainVM.useAIbleDonePlaying()) {
+                                    mainVM.useAIbleSimulator().StartSync(useAIbleLogisticsPlayer);
+                                }
+
+                                if (!mainVM.EncogDonePlaying()) {
+                                    mainVM.EncogSimulator().StartSync(encogLogisticPlayer);
+                                }
+
+                                mainVM.SessionToPlay(mainVM.SessionToPlay() + 1);
+                            }
+                        }
+                    }
+                }
+            }
+
+        };
+
+        var h2hSyncHandler = setInterval(syncH2H, 3000);
+
 
         mainVM = new MainVM();
 
