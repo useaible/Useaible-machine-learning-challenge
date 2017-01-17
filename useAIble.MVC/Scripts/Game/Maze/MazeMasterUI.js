@@ -1,4 +1,4 @@
-﻿
+
 var canvas = document.getElementById("useaible");
 var context = canvas.getContext("2d");
 
@@ -299,9 +299,14 @@ function MainVM() {
     });
 
     self.SessionData = ko.observableArray([]);
+
     self.useAIbleDonePlaying = ko.observable(true);
     self.TensorFlowDonePlaying = ko.observable(true);
     self.EncogDonePlaying = ko.observable(true);
+
+    self.useAIbleCurrentGameDonePlaying = ko.observable(false);
+    self.TensorFlowCurrentGameDonePlaying = ko.observable(false);
+    self.EncogCurrentGameDonePlaying = ko.observable(false);
 
     self.useAIbleDonePlaying.subscribe(function (val) {
         //alert('useAIble-'+ val);
@@ -471,12 +476,12 @@ function MainVM() {
                 var h2hPlayer = self.SelectedHeadToHeadOption().Id;
 
                 if (h2hPlayer == 'useAIble-tensorflow') {
-                    playUseAIbleMaze(self.TensorFlowDonePlaying);
-                    playTensorFlowMaze(self.useAIbleDonePlaying);
+                    playUseAIbleMaze(self.TensorFlowDonePlaying, self.TensorFlowCurrentGameDonePlaying, self.useAIbleCurrentGameDonePlaying);
+                    playTensorFlowMaze(self.useAIbleDonePlaying, self.useAIbleCurrentGameDonePlaying, self.TensorFlowCurrentGameDonePlaying);
                     minimizeSettings();
                 } else if (h2hPlayer == 'useAIble-encog') {
-                    playUseAIbleMaze(self.EncogDonePlaying);
-                    playEncogMaze(self.useAIbleDonePlaying);
+                    playUseAIbleMaze(self.EncogDonePlaying, self.EncogCurrentGameDonePlaying, self.useAIbleCurrentGameDonePlaying);
+                    playEncogMaze(self.useAIbleDonePlaying, self.useAIbleCurrentGameDonePlaying, self.EncogCurrentGameDonePlaying);
                     minimizeSettings();
                 }
 
@@ -560,7 +565,7 @@ function MainVM() {
 
     };
 
-    var playUseAIbleMaze = function (player2) {
+    var playUseAIbleMaze = function (player2, player2CurrentGameDonePlaying, useAIbleCurrentGameDonePlaying, useAIbleBatchDone) {
 
         self.SessionData([]);
 
@@ -577,10 +582,10 @@ function MainVM() {
 
         var settings = self.NetworkSettings();
 
-        self.useAIbleMazeMaster().Play(USER_TOKEN, NUM_SESSIONS, self.useAIbleMazeMaster().MazeGridData, settings, player2);
+        self.useAIbleMazeMaster().Play(USER_TOKEN, NUM_SESSIONS, self.useAIbleMazeMaster().MazeGridData, settings, player2, player2CurrentGameDonePlaying, useAIbleCurrentGameDonePlaying, useAIbleBatchDone);
     };
 
-    var playEncogMaze = function (player1) {
+    var playEncogMaze = function (player1, player1CurrentGameDonePlaying, encogCurrentGameDonePlaying) {
 
         self.SessionData([]);
 
@@ -593,10 +598,10 @@ function MainVM() {
 
         var settings = self.NetworkSettings();
 
-        self.EncogMazeMaster().Play(USER_TOKEN, NUM_SESSIONS, self.useAIbleMazeMaster().MazeGridData, settings, player1);
+        self.EncogMazeMaster().Play(USER_TOKEN, NUM_SESSIONS, self.useAIbleMazeMaster().MazeGridData, settings, player1, player1CurrentGameDonePlaying, encogCurrentGameDonePlaying);
     };
 
-    var playTensorFlowMaze = function (player1) {
+    var playTensorFlowMaze = function (player1, player1CurrentGameDonePlaying, tensorflowCurrentGameDonePlaying) {
 
         self.SessionData([]);
 
@@ -616,7 +621,7 @@ function MainVM() {
                 Maze: self.useAIbleMazeMaster().MazeGridData
             };
 
-            self.TensorflowMazeMaster().StartSession(settings, player1);
+            self.TensorflowMazeMaster().StartSession(settings, player1, player1CurrentGameDonePlaying, tensorflowCurrentGameDonePlaying);
         });
     };
 
@@ -787,10 +792,12 @@ function MainVM() {
     self.FromChartPage = ko.observable(0);
     self.ToChartPage = ko.observable(99);
 
+    self.CurrentPage = ko.observable(1);
+
     self.PreviousChartPage = function () {
-        if (self.FromChartPage() > 0) {
-            self.FromChartPage(self.FromChartPage() - 99);
-            self.ToChartPage(self.FromChartPage() + 99);
+
+        if (self.CurrentPage() > 1) {
+            self.CurrentPage(self.CurrentPage() - 1);
         }
 
         showComparisonChart(self.SessionData());
@@ -798,12 +805,10 @@ function MainVM() {
 
     self.NextChartPage = function () {
 
-        var sessions = eval($("#sessionInput").val());
-
-        if (self.ToChartPage() < sessions) {
-            self.FromChartPage(self.ToChartPage());
-            self.ToChartPage(self.ToChartPage() + 99);
+        if (self.CurrentPage() < CHART_PAGES_COUNT) {
+            self.CurrentPage(self.CurrentPage() + 1);
         }
+
         showComparisonChart(self.SessionData());
     };
 
@@ -824,6 +829,10 @@ function MainVM() {
     self.useAIbleShowChartBtn = ko.observable(false);
     self.TensorFlowShowChartBtn = ko.observable(false);
     self.EncogShowChartBtn = ko.observable(false);
+
+    self.useAIbleLogisticLowestCostAtSession = ko.observable();
+    self.TensorFlowLogisticLowestCostAtSession = ko.observable();
+    self.EncogLogisticLowestCostAtSession = ko.observable();
 
     self.ShowChartBtn = ko.computed(function () {
         if (self.SelectedPlayerOption().Name == 'Head-To-Head') {
@@ -921,17 +930,21 @@ function showComparisonChart(gameQueue) {
 
         EncogAvgScore: mainVM.EncogAvgScore,
         EncogHighestScore: mainVM.EncogHighestScore,
-        EncogLearnedAfter: mainVM.EncogLearnedAfter
+        EncogLearnedAfter: mainVM.EncogLearnedAfter,
+
+        useAIbleLogisticLowestCostAtSession: mainVM.useAIbleLogisticLowestCostAtSession,
+        TensorFlowLogisticLowestCostAtSession: mainVM.TensorFlowLogisticLowestCostAtSession,
+        EncogLogisticLowestCostAtSession: mainVM.EncogLogisticLowestCostAtSession
     };
     
     if (mainVM.SelectedPlayerOption().Name == 'Head-To-Head') {
-        createChart(undefined, chartData, mainVM.SelectedChartViewOption(), mainVM.FromChartPage, mainVM.ToChartPage, summary, mainVM.NUMBER_OF_CHART_POINTS, false);
+        createChart(undefined, chartData, mainVM.SelectedChartViewOption(), mainVM.FromChartPage, mainVM.ToChartPage, summary, mainVM.NUMBER_OF_CHART_POINTS, false, mainVM.CurrentPage);
     } else if (mainVM.SelectedPlayerOption().Name == 'useAIble') {
-        createChart('useAIble', chartData, mainVM.SelectedChartViewOption(), mainVM.FromChartPage, mainVM.ToChartPage, summary, mainVM.NUMBER_OF_CHART_POINTS, false);
+        createChart('useAIble', chartData, mainVM.SelectedChartViewOption(), mainVM.FromChartPage, mainVM.ToChartPage, summary, mainVM.NUMBER_OF_CHART_POINTS, false, mainVM.CurrentPage);
     } else if (mainVM.SelectedPlayerOption().Name == 'Tensor Flow') {
-        createChart('tensorFlow', chartData, mainVM.SelectedChartViewOption(), mainVM.FromChartPage, mainVM.ToChartPage, summary, mainVM.NUMBER_OF_CHART_POINTS, false);
+        createChart('tensorFlow', chartData, mainVM.SelectedChartViewOption(), mainVM.FromChartPage, mainVM.ToChartPage, summary, mainVM.NUMBER_OF_CHART_POINTS, false, mainVM.CurrentPage);
     } else if (mainVM.SelectedPlayerOption().Name == 'Encog') {
-        createChart('encog', chartData, mainVM.SelectedChartViewOption(), mainVM.FromChartPage, mainVM.ToChartPage, summary, mainVM.NUMBER_OF_CHART_POINTS, false);
+        createChart('encog', chartData, mainVM.SelectedChartViewOption(), mainVM.FromChartPage, mainVM.ToChartPage, summary, mainVM.NUMBER_OF_CHART_POINTS, false, mainVM.CurrentPage);
     }
 }
 
@@ -982,6 +995,41 @@ $(document).ready(function () {
 
     });
 
+    var syncH2H = function () {
+
+        if (mainVM.HeadToHeadSelected()) {
+
+            var useAIble = mainVM.useAIbleMazeMaster();
+            var tensorflow = mainVM.TensorflowMazeMaster();
+            var encog = mainVM.EncogMazeMaster();
+
+            var h2h = mainVM.SelectedHeadToHeadOption();
+
+            if (h2h) {
+                var h2hOption = h2h.Id;
+
+                if (h2hOption == 'useAIble-tensorflow') {
+
+                    if (mainVM.useAIbleCurrentGameDonePlaying() && mainVM.TensorFlowCurrentGameDonePlaying()) {
+                        useAIble.StartGame(useAIble.StartGame() ? false : true);
+                        tensorflow.StartGame(tensorflow.StartGame() ? false : true);
+                    }
+
+                } else if (h2hOption == 'useAIble-encog') {
+
+                    if (mainVM.useAIbleCurrentGameDonePlaying() && mainVM.EncogCurrentGameDonePlaying()) {
+                        useAIble.StartGame(useAIble.StartGame() ? false : true);
+                        encog.StartGame(encog.StartGame() ? false : true);
+                    }
+
+                }
+            }
+        }
+
+    };
+
+    var h2hSyncHandler = setInterval(syncH2H, 3000);
+
 });
 
 function move(drawingArea, direction, currX, currY, pathColor) {
@@ -1000,6 +1048,7 @@ function move(drawingArea, direction, currX, currY, pathColor) {
 
                 if (curX == goalPosition.X * pixelMultiplier && curY == goalPosition.Y * pixelMultiplier) {
                     drawRectangle(drawingArea, currX(), currY(), 'red');
+                    resetPosition(drawingArea, currX, currY);
                 } else {
                     drawRectangle(drawingArea, currX(), currY(), 'violet');
                 }
@@ -1010,6 +1059,7 @@ function move(drawingArea, direction, currX, currY, pathColor) {
                     clearRectangle(drawingArea, currX(), currY());
                     drawRectangle(drawingArea, currX(), currY(), 'red');
                     mainVM.DonePlaying(true);
+                    resetPosition(drawingArea, currX, currY);
                 }
 
             }
@@ -1031,6 +1081,7 @@ function move(drawingArea, direction, currX, currY, pathColor) {
 
                 if (curX == goalPosition.X * pixelMultiplier && curY == goalPosition.Y * pixelMultiplier) {
                     drawRectangle(drawingArea, currX(), currY(), 'red');
+                    resetPosition(drawingArea, currX, currY);
                 } else {
                     drawRectangle(drawingArea, currX(), currY(), 'violet');
                 }
@@ -1041,6 +1092,7 @@ function move(drawingArea, direction, currX, currY, pathColor) {
                     clearRectangle(drawingArea, currX(), currY());
                     drawRectangle(drawingArea, currX(), currY(), 'red');
                     mainVM.DonePlaying(true);
+                    resetPosition(drawingArea, currX, currY);
                 }
 
             }
@@ -1062,6 +1114,7 @@ function move(drawingArea, direction, currX, currY, pathColor) {
 
                 if (curX == goalPosition.X * pixelMultiplier && curY == goalPosition.Y * pixelMultiplier) {
                     drawRectangle(drawingArea, currX(), currY(), 'red');
+                    resetPosition(drawingArea, currX, currY);
                 } else {
                     drawRectangle(drawingArea, currX(), currY(), 'violet');
                 }
@@ -1072,6 +1125,7 @@ function move(drawingArea, direction, currX, currY, pathColor) {
                     clearRectangle(drawingArea, currX(), currY());
                     drawRectangle(drawingArea, currX(), currY(), 'red');
                     mainVM.DonePlaying(true);
+                    resetPosition(drawingArea, currX, currY);
                 }
 
             }
@@ -1093,6 +1147,7 @@ function move(drawingArea, direction, currX, currY, pathColor) {
 
                 if (curX == goalPosition.X * pixelMultiplier && curY == goalPosition.Y * pixelMultiplier) {
                     drawRectangle(drawingArea, currX(), currY(), 'red');
+                    resetPosition(drawingArea, currX, currY);
                 } else {
                     drawRectangle(drawingArea, currX(), currY(), 'violet');
                 }
@@ -1103,6 +1158,7 @@ function move(drawingArea, direction, currX, currY, pathColor) {
                     clearRectangle(drawingArea, currX(), currY());
                     drawRectangle(drawingArea, currX(), currY(), 'red');
                     mainVM.DonePlaying(true);
+                    resetPosition(drawingArea, currX, currY);
                 }
 
             }
@@ -1115,26 +1171,26 @@ $(document).keydown(function (e) {
     switch (e.which) {
         case 37: // left
 
-            move(context, 'left', mainVM.CurX, mainVM.CurY, 'white');
+            move(mainVM.CurrentCanvasCtx, 'left', mainVM.CurX, mainVM.CurY, 'white');
 
 
             break;
 
         case 38: // up
 
-            move(context, 'up', mainVM.CurX, mainVM.CurY, 'white');
+            move(mainVM.CurrentCanvasCtx, 'up', mainVM.CurX, mainVM.CurY, 'white');
 
             break;
 
         case 39: // right
 
-            move(context, 'right', mainVM.CurX, mainVM.CurY, 'white');
+            move(mainVM.CurrentCanvasCtx, 'right', mainVM.CurX, mainVM.CurY, 'white');
 
             break;
 
         case 40: // down
 
-            move(context, 'down', mainVM.CurX, mainVM.CurY, 'white');
+            move(mainVM.CurrentCanvasCtx, 'down', mainVM.CurX, mainVM.CurY, 'white');
 
             break;
 
@@ -1144,7 +1200,66 @@ $(document).keydown(function (e) {
 });
 
 $(window).bind('beforeunload', function () {
-    if (!mainVM.DonePlaying()) {
-        return ' ';
+
+    var player = mainVM.SelectedPlayerOption().Name;
+
+    if (player == 'useAIble') {
+
+        if (!mainVM.useAIbleDonePlaying()) {
+            return ' ';
+        } else {
+            if (client) {
+                client.disconnect();
+            }
+        }
+
+    } else if (player == 'Tensor Flow') {
+
+
+        if (!mainVM.TensorFlowDonePlaying()) {
+            return ' ';
+        } 
+
+    } else if (player == 'Encog') {
+
+        if (!mainVM.EncogDonePlaying()) {
+            return ' ';
+        } else {
+            if (client3) {
+                client3.disconnect();
+            }
+        }
+
+    } else if (player == 'Head-To-Head') {
+
+        var h2hPlayer = mainVM.SelectedHeadToHeadOption();
+        if (h2hPlayer) {
+            if (h2hPlayer.Id == 'useAIble-tensorflow') {
+
+                if (!mainVM.useAIbleDonePlaying() || !mainVM.TensorFlowDonePlaying()) {
+                    return ' ';
+                } else {
+                    if (client) {
+                        client.disconnect();
+                    }
+                }
+
+            } else if (h2hPlayer.Id == 'useAIble-encog') {
+
+
+
+                if (!mainVM.useAIbleDonePlaying() && !mainVM.EncogDonePlaying()) {
+                    return ' ';
+                } else {
+                    if (client) {
+                        client.disconnect();
+                    }
+                    if (client3) {
+                        client3.disconnect();
+                    }
+                }
+
+            }
+        }
     }
 });
