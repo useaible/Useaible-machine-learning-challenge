@@ -1,11 +1,10 @@
-﻿function EncogMazeMaster(drawRectangle, mazeGenerated, move, resetPosition, sessionData, donePlaying, speed, currentCanvas, X, Y, encogShowChart, showComparisonChart) {
+function EncogMazeMaster(drawRectangle, mazeGenerated, move, resetPosition, sessionData, donePlaying, speed, currentCanvas, X, Y, encogShowChart, showComparisonChart) {
 
     var numSessions;
     var pixelMultiplier = 10;
     var repo = new DRNNRepository();
     var self = this;
     var USER_TOKEN;
-    var client;
 
     self.MazeGridData = {};
     self.MazeGrid = {};
@@ -234,14 +233,22 @@
 
                     self.Playing(true);
 
-                    $.each(sessionData(), function (sess_index, sess_data) {
-                        if (sess_data.Type() == 'encog') {
-                            if (value.Session == sess_data.Id) {
-                                sess_data.Playing(true);
-                                return false;
-                            }
-                        }
-                    });
+                    donePlaying(false);
+                    disableSettingsControls(true);
+
+                    if (IS_HEAD_TO_HEAD) {
+                        ENCOG_CURRENT_GAME_DONE(false);
+                        CURRENTLY_PLAYING = true;
+                    }
+
+                    //$.each(sessionData(), function (sess_index, sess_data) {
+                    //    if (sess_data.Type() == 'encog') {
+                    //        if (value.Session == sess_data.Id) {
+                    //            sess_data.Playing(true);
+                    //            return false;
+                    //        }
+                    //    }
+                    //});
 
                     var start = function () {
 
@@ -268,6 +275,7 @@
 
                             if (moveCounter <= len) {
                                 $("#loadingMazeEncog").text("Playing...");
+                                disableSettingsControls(true);
                                 start();
                             }
                             else if (moveCounter > len) {
@@ -276,18 +284,71 @@
                                 self.Playing(false);
 
                                     resetPosition(currentCanvas, X, Y);
-                                    $("#loadingMazeEncog").text("Done");
+                                //$("#loadingMazeEncog").text("Ready session " + eval(value.Session + 1));
+                                    $("#loadingMazeEncog").text("Loading data...");
                                     $("#currentSessionEncog").text("");
+                                    $("#directionEncog").text("");
 
-                                    $.each(sessionData(), function (sess_index, sess_data) {
-                                        if (sess_data.Type() == 'encog') {
-                                            if (value.Session == sess_data.Id) {
-                                                sess_data.Done(true);
-                                                sess_data.Playing(false);
-                                                return false;
-                                            }
+
+                                    var sessDataObj = {
+                                        Id: CURR_SESSION_COUNT,
+                                        Score: moveObj.SessionScore,
+                                        Type: ko.observable('encog'),
+                                        Playing: ko.observable(false),
+                                        Done: ko.observable(true)
+                                    };
+
+                                    sessDataObj.Icon = ko.computed(function () {
+                                        if (sessDataObj.Done()) {
+                                            return '<i class="fa fa-check-square-o" aria-hidden="true" title="Done Playing"></i>';
+                                        } else if (!sessDataObj.Done() && sessDataObj.Playing()) {
+                                            return '<i class="fa fa-cog fa-spin fa-3x fa-fw" aria-hidden="true" title="Currently Playing"></i>';
+                                        } else if (!sessDataObj.Done() && !sessDataObj.Playing()) {
+                                            return '<i class="fa fa-hourglass-half" aria-hidden="true" title="Pending"></i>';
                                         }
                                     });
+
+                                    sessionData.push(sessDataObj);
+
+                                    if (IS_HEAD_TO_HEAD) {
+                                        ENCOG_CURRENT_GAME_DONE(true);
+                                    }
+
+                                    CURRENTLY_PLAYING = false;
+
+
+                                    //$.each(sessionData(), function (sess_index, sess_data) {
+                                    //    if (sess_data.Type() == 'encog') {
+                                    //        if (value.Session == sess_data.Id) {
+
+                                    //            sess_data.Done(true);
+                                    //            sess_data.Playing(false);
+
+
+                                    //            var sessDataObj = {
+                                    //                Id: SESSION_COUNTER,
+                                    //                Score: sess_data.Score,
+                                    //                Type: ko.observable('encog'),
+                                    //                Playing: ko.observable(false),
+                                    //                Done: ko.observable(true)
+                                    //            };
+
+                                    //            sessDataObj.Icon = ko.computed(function () {
+                                    //                if (sessDataObj.Done()) {
+                                    //                    return '<i class="fa fa-check-square-o" aria-hidden="true" title="Done Playing"></i>';
+                                    //                } else if (!sessDataObj.Done() && sessDataObj.Playing()) {
+                                    //                    return '<i class="fa fa-cog fa-spin fa-3x fa-fw" aria-hidden="true" title="Currently Playing"></i>';
+                                    //                } else if (!sessDataObj.Done() && !sessDataObj.Playing()) {
+                                    //                    return '<i class="fa fa-hourglass-half" aria-hidden="true" title="Pending"></i>';
+                                    //                }
+                                    //            });
+
+                                    //            sessionData.push(sessDataObj);
+
+                                    //            return false;
+                                    //        }
+                                    //    }
+                                    //});
 
                                     console.log("Done playing session " + value.Session);
 
@@ -305,24 +366,43 @@
 
                                             if (USEAIBLE_DONE_PLAYING != undefined) {
 
+                                                $("#loadingMazeEncog").text("Done");
+                                                $("#currentSessionEncog").text("");
+
                                                 if (USEAIBLE_DONE_PLAYING()) {
                                                     disableSettingsControls(false);
-                                                    $(".outer-chart-container").show();
-                                                    showComparisonChart(sessionData());
+                                                    //$(".outer-chart-container").show();
+                                                    //showComparisonChart(sessionData());
+
+                                                    $(".view-chart").show();
+
                                                 }
 
                                             } else {
 
                                                 disableSettingsControls(false);
-                                                $(".outer-chart-container").show();
-                                                showComparisonChart(sessionData());
+                                                //$(".outer-chart-container").show();
+                                                //showComparisonChart(sessionData());
+
+                                                $("#loadingMazeEncog").text("Done");
+                                                $("#currentSessionEncog").text("");
+
+                                                $(".view-chart").show();
                                             }
 
                                             var table = $(".table-container");
                                             table.animate({ scrollTop: table.prop("scrollHeight") - table.height() });
+
+                                            if (client3) {
+                                                if (client3.isConnected()) {
+                                                    client3.disconnect();
+                                                }
+                                            }
                                         }
 
-                                self.StartGame(self.StartGame() ? false : true);
+                                        if (!IS_HEAD_TO_HEAD) {
+                                            self.StartGame(self.StartGame() ? false : true);
+                                        }
                             }
 
                         }, speed().Id);
@@ -338,124 +418,167 @@
 
     });
 
-    self.Play = function (userToken, sessions, maze, settings, useAIbleDonePlaying) {
+    var USEAIBLE_DONE_PLAYING;
+    var DONE_PLAYING;
 
-        var def = $.Deferred();
+    var USEAIBLE_CURRENT_GAME_DONE;
+    var ENCOG_CURRENT_GAME_DONE;
 
-        SESSION_COUNTER = 0;
-        CURR_SESSION_COUNT = 0;
+    var IS_HEAD_TO_HEAD = false;
+    var CURRENTLY_PLAYING = false;
 
-        USER_TOKEN = userToken;
-        numSessions = sessions;
+    self.Play = function (userToken, sessions, maze, settings, useAIbleDonePlaying, useAIbleCurrentGameDonePlaying, encogCurrentGameDonePlaying) {
 
-        donePlaying(false);
-        disableSettingsControls(true);
+        try{
 
-        USEAIBLE_DONE_PLAYING = useAIbleDonePlaying;
+            var def = $.Deferred();
 
-        self.MoveList = [];
+            SESSION_COUNTER = 0;
+            CURR_SESSION_COUNT = 0;
 
-        client = new Paho.MQTT.Client("dev.useaible.com", 61614, repo.GenerateGUID());
+            USER_TOKEN = userToken;
+            numSessions = sessions;
 
-        client.onConnectionLost = function (msg) {
-            donePlaying(true);
-            console.log("connection lost");
-            disableSettingsControls(false);
-        };
+            donePlaying(false);
+            disableSettingsControls(true);
 
-        client.onMessageArrived = function (msg) {
+            USEAIBLE_DONE_PLAYING = useAIbleDonePlaying;
+            DONE_PLAYING = donePlaying;
 
-            var destinationName = msg.destinationName;
+            USEAIBLE_CURRENT_GAME_DONE = useAIbleCurrentGameDonePlaying;
+            ENCOG_CURRENT_GAME_DONE = encogCurrentGameDonePlaying;
 
-            var mazeOutputsRoute = userToken + "/encog/maze/simulation_output";
+            if (ENCOG_CURRENT_GAME_DONE) {
+                ENCOG_CURRENT_GAME_DONE(false);
+            }
 
-            if (destinationName == mazeOutputsRoute) {
+            IS_HEAD_TO_HEAD = USEAIBLE_CURRENT_GAME_DONE ? true : false;
 
-                SESSION_COUNTER++;
+            self.MoveList = [];
 
-                var output = eval("(" + msg.payloadString + ")");
+            //client = new Paho.MQTT.Client("dev.useaible.com", 61614, repo.GenerateGUID());
+            client3 = new Paho.MQTT.Client(MQTT_URL, MQTT_PORT, repo.GenerateGUID());
 
-                var outputObj = {
-                    Moves: output.Directions,
-                    BatchDone: ko.observable(false),
-                    Session: SESSION_COUNTER,
-                    SessionScore: output.Score
-                };
+            client3.onConnectionLost = function (msg) {
 
-                self.MoveList.push(outputObj);
+                console.log(msg.errorMessage);
 
-                var sessDataObj = {
-                    Id: SESSION_COUNTER,
-                    Score: output.Score,
-                    Type: ko.observable('encog'),
-                    Playing: ko.observable(false),
-                    Done: ko.observable(false)
-                };
+                //donePlaying(true);
+                //disableSettingsControls(false);
+            };
 
-                sessDataObj.Icon = ko.computed(function () {
-                    if (sessDataObj.Done()) {
-                        return '<i class="fa fa-check-square-o" aria-hidden="true" title="Done Playing"></i>';
-                    } else if (!sessDataObj.Done() && sessDataObj.Playing()) {
-                        return '<i class="fa fa-cog fa-spin fa-3x fa-fw" aria-hidden="true" title="Currently Playing"></i>';
-                    } else if (!sessDataObj.Done() && !sessDataObj.Playing()) {
-                        return '<i class="fa fa-hourglass-half" aria-hidden="true" title="Pending"></i>';
+            client3.onMessageArrived = function (msg) {
+
+                var destinationName = msg.destinationName;
+
+                var mazeOutputsRoute = userToken + "/encog/maze/simulation_output";
+
+                if (destinationName == mazeOutputsRoute) {
+
+                    SESSION_COUNTER++;
+
+                    if (IS_HEAD_TO_HEAD) {
+                        if (SESSION_COUNTER == 1) {
+                            ENCOG_CURRENT_GAME_DONE(true);
+                        } else {
+                            if (!CURRENTLY_PLAYING) {
+                                ENCOG_CURRENT_GAME_DONE(true);
+                            }
+                        }
                     }
-                });
 
-                sessionData.push(sessDataObj);
+                    var output = eval("(" + msg.payloadString + ")");
+
+                    var outputObj = {
+                        Moves: output.Directions,
+                        BatchDone: ko.observable(false),
+                        Session: SESSION_COUNTER,
+                        SessionScore: output.Score
+                    };
+
+                    self.MoveList.push(outputObj);
+
+                    //var sessDataObj = {
+                    //    Id: SESSION_COUNTER,
+                    //    Score: output.Score,
+                    //    Type: ko.observable('encog'),
+                    //    Playing: ko.observable(false),
+                    //    Done: ko.observable(false)
+                    //};
+
+                    //sessDataObj.Icon = ko.computed(function () {
+                    //    if (sessDataObj.Done()) {
+                    //        return '<i class="fa fa-check-square-o" aria-hidden="true" title="Done Playing"></i>';
+                    //    } else if (!sessDataObj.Done() && sessDataObj.Playing()) {
+                    //        return '<i class="fa fa-cog fa-spin fa-3x fa-fw" aria-hidden="true" title="Currently Playing"></i>';
+                    //    } else if (!sessDataObj.Done() && !sessDataObj.Playing()) {
+                    //        return '<i class="fa fa-hourglass-half" aria-hidden="true" title="Pending"></i>';
+                    //    }
+                    //});
+
+                    //sessionData.push(sessDataObj);
 
 
-                self.StartGame(self.StartGame() ? false : true);
-            }
+                    if (!IS_HEAD_TO_HEAD) {
+                        self.StartGame(self.StartGame() ? false : true);
+                    }
+                }
 
-        };
+            };
 
-        client.connect({
-            keepAliveInterval: 600, // 10mins (60s*10)
-            onSuccess: function () {
+            client3.connect({
+                keepAliveInterval: 1800,
+                timeout: 10000,
+                onFailure: function (fl) {
+                    console.log(fl.errorMessage);
+                },
+                onSuccess: function () {
 
-                sessionCount = 0;
-                disableSettingsControls(true);
+                    sessionCount = 0;
+                    disableSettingsControls(true);
 
-                $("#loadingMazeEncog").text("Loading maze....");
+                    $("#loadingMazeEncog").text("Loading data....");
 
-                client.subscribe(userToken + "/encog/mazeMove");
-                client.subscribe(userToken + "/mazeSessionScores");
-                client.subscribe(userToken + "/mazeEpochScores");
-                client.subscribe(userToken + "/encog/maze/simulation_output");
+                    client3.subscribe(userToken + "/encog/mazeMove");
+                    client3.subscribe(userToken + "/mazeSessionScores");
+                    client3.subscribe(userToken + "/mazeEpochScores");
+                    client3.subscribe(userToken + "/encog/maze/simulation_output");
 
-                console.log("subscribed to mazeMove");
+                    console.log("subscribed to mazeMove");
 
-                maze.Name = "Maze";
+                    maze.Name = "Maze";
 
-                var neuronInputs = $.map(self.HiddenLayerNeuronsInputs(), function (neuron, i) {
-                    return neuron.NeuronCount();
-                });
+                    var neuronInputs = $.map(self.HiddenLayerNeuronsInputs(), function (neuron, i) {
+                        return neuron.NeuronCount();
+                    });
 
-                var mazeParams = {
-                    MazeInfo: maze,
-                    NumSessions: sessions,
-                    Settings: settings,
-                    HiddenLayerNeurons: self.HiddenLayerNeurons(),
-                    TrainingMethodType: self.TrainingMethodType(),
-                    Cycles: self.Cycles(),
-                    StartTemp: self.StartTemp(),
-                    StopTemp: self.StopTemp(),
-                    PopulationSize: self.PopulationSize(),
-                    Epochs: self.Epochs(),
-                    MinRandom: self.MinRandom(),
-                    MaxRandom: self.MaxRandom(),
-                    HiddenLayerNeuronsInputs: neuronInputs
-                };
+                    var mazeParams = {
+                        MazeInfo: maze,
+                        NumSessions: sessions,
+                        Settings: settings,
+                        HiddenLayerNeurons: self.HiddenLayerNeurons(),
+                        TrainingMethodType: self.TrainingMethodType(),
+                        Cycles: self.Cycles(),
+                        StartTemp: self.StartTemp(),
+                        StopTemp: self.StopTemp(),
+                        PopulationSize: self.PopulationSize(),
+                        Epochs: self.Epochs(),
+                        MinRandom: self.MinRandom(),
+                        MaxRandom: self.MaxRandom(),
+                        HiddenLayerNeuronsInputs: neuronInputs
+                    };
 
-                repo.PlayMazeEncog(userToken, sessions, mazeParams).done(function (res) {
+                    repo.PlayMazeEncog(userToken, sessions, mazeParams).done(function (res) {
 
-                    console.log("Encog maze playing...");
-                    def.resolve();
+                        console.log("Encog maze playing...");
+                        def.resolve();
 
-                });
-            }
-        });
+                    });
+                }
+            });
+        } catch (exception) {
+            console.log(exception);
+        }
 
         return def;
     };
