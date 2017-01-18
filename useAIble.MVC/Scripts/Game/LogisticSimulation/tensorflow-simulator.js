@@ -1,8 +1,11 @@
-﻿
+
 var repo2 = new DRNNRepository();
-var client2 = new Paho.MQTT.Client("dev.useaible.com", 61614, repo2.GenerateGUID());
+//var client2 = new Paho.MQTT.Client("dev.useaible.com", 61614, repo2.GenerateGUID());
+//var client2 = new Paho.MQTT.Client(MQTT_URL, MQTT_PORT, repo2.GenerateGUID());
 
 function TensorFlowSimulator(donePlaying, sessionData, tensorflowShowChart, showComparisonChart) {
+
+    client2 = new Paho.MQTT.Client(MQTT_URL, MQTT_PORT, repo2.GenerateGUID());
 
     var self = this;
     var USER_TOKEN;
@@ -72,60 +75,90 @@ function TensorFlowSimulator(donePlaying, sessionData, tensorflowShowChart, show
     //};
 
     var connect = function (userToken, drawGame) {
-            client2.connect({
-                keepAliveInterval: 1000, // 10mins (60s*10)
-                onSuccess: function () {
 
-                    drawGame.UpdateSummaryDetails(self.Canvas(), {
-                        CurrentStatus: self.CurrentStatus(),
-                        CurrentSession: self.CurrentSession(),
-                        CurrentSessionScore: self.CurrentSessionScore()
-                    });
+        if (client2) {
+            if (!client2.isConnected()) {
+                client2.connect({
+                    keepAliveInterval: 1800,
+                    timeout: 10000,
+                    onFailure: function (fl) {
+                        console.log(fl.errorMessage);
+                    },
+                    onSuccess: function () {
 
-                    client2.subscribe(userToken + "/outputFromServer");
-                    client2.subscribe(userToken + "/requestOrder");
-                    client2.subscribe(userToken + "/receiveOrder");
-                    client2.subscribe(userToken + "/logisticSessionScores");
-                    client2.subscribe(userToken + "/logisticOutputs");
-                    client2.subscribe(userToken + "/test_data");
-                    client2.subscribe(userToken + "/tensorflowTimeout");
+                        drawGame.UpdateSummaryDetails(self.Canvas(), {
+                            CurrentStatus: self.CurrentStatus(),
+                            CurrentSession: self.CurrentSession(),
+                            CurrentSessionScore: self.CurrentSessionScore(),
 
-                    console.log("subscribed to tensorflow logistic simulator with token = " + userToken);
-                }
-            });
+                            StorageCostPerDay: "",
+                            BacklogCostPerDay: ""
+                        });
+
+                        client2.subscribe(userToken + "/tensorflow/outputFromServer", { qos: 1 });
+                        //client2.subscribe(userToken + "/requestOrder", { qos: 1 });
+                        //client2.subscribe(userToken + "/receiveOrder");
+                        client2.subscribe(userToken + "/logisticSessionScores", { qos: 1 });
+                        client2.subscribe(userToken + "/logisticOutputs", { qos: 1 });
+                        //client2.subscribe(userToken + "/test_data", { qos: 1 });
+                        //client2.subscribe(userToken + "/tensorflowTimeout", { qos: 1 });
+
+                        console.log("subscribed to tensorflow logistic simulator with token = " + userToken);
+                    }
+                });
+            }
+        }
+
+            client2.onConnectionLost = function (msg) {
+
+                console.log(msg.errorMessage);
+                //self.CurrentStatus("Connection Lost");
+
+                //drawGame.UpdateSummaryDetails(self.Canvas(), {
+                //    CurrentStatus: self.CurrentStatus(),
+                //    CurrentSession: self.CurrentSession(),
+                //    CurrentSessionScore: self.CurrentSessionScore()
+                //});
+
+                //disableSettingsControls(false);
+
+
+                //connect(userToken, drawGame);
+            };
     };
 
     self.Init = function (userToken, drawGame) {
 
         //client2 = new Paho.MQTT.client("dev.useaible.com", 61614, repo.GenerateGUID());
 
-        client2.onConnectionLost = function (msg) {
-            console.log("connection lost");
-            //self.CurrentStatus("Connection Lost");
+        //client2.onConnectionLost = function (msg) {
+
+        //    console.log(msg.errorMessage);
+        //    //self.CurrentStatus("Connection Lost");
             
-            //drawGame.UpdateSummaryDetails(self.Canvas(), {
-            //    CurrentStatus: self.CurrentStatus(),
-            //    CurrentSession: self.CurrentSession(),
-            //    CurrentSessionScore: self.CurrentSessionScore()
-            //});
+        //    //drawGame.UpdateSummaryDetails(self.Canvas(), {
+        //    //    CurrentStatus: self.CurrentStatus(),
+        //    //    CurrentSession: self.CurrentSession(),
+        //    //    CurrentSessionScore: self.CurrentSessionScore()
+        //    //});
 
-            disableSettingsControls(false);
+        //    //disableSettingsControls(false);
 
 
-            connect(userToken, drawGame);
-        };
+        //    connect(userToken, drawGame);
+        //};
 
-        if (!client2.isConnected()) {
-            connect(userToken, drawGame);
-        } else {
-            client2.subscribe(userToken + "/outputFromServer");
-            client2.subscribe(userToken + "/requestOrder");
-            client2.subscribe(userToken + "/receiveOrder");
-            client2.subscribe(userToken + "/logisticSessionScores");
-            client2.subscribe(userToken + "/logisticOutputs");
-            client2.subscribe(userToken + "/test_data");
-            client2.subscribe(userToken + "/tensorflowTimeout");
-        }
+        //if (!client2.isConnected()) {
+        //    connect(userToken, drawGame);
+        //} else {
+        //    client2.subscribe(userToken + "/tensorflow/outputFromServer", { qos: 1 });
+        //    //client2.subscribe(userToken + "/requestOrder", { qos: 1 });
+        //    //client2.subscribe(userToken + "/receiveOrder", { qos: 1 });
+        //    client2.subscribe(userToken + "/logisticSessionScores", { qos: 1 });
+        //    client2.subscribe(userToken + "/logisticOutputs", { qos: 1 });
+        //    //client2.subscribe(userToken + "/test_data", { qos: 1 });
+        //    //client2.subscribe(userToken + "/tensorflowTimeout", { qos: 1 });
+        //}
 
     };
 
@@ -138,20 +171,32 @@ function TensorFlowSimulator(donePlaying, sessionData, tensorflowShowChart, show
     self.LogisticOutputs = ko.observableArray([]);
     self.Playing = ko.observable(false);
 
-    self.StartPlay = ko.observable(false);
-    self.StartPlay.subscribe(function () {
+    var CURR_SESS_COUNT = 0;
+
+    self.StartGame = ko.observable(false);
+    self.StartGame.subscribe(function () {
         $.each(self.Logistics(), function (index, val) {
 
             if (!val.Done() && !self.Playing()) {
+
+                CURR_SESS_COUNT++;
 
                 self.Playing(true);
                 self.CurrentStatus("Tensor Flow Playing...");
 
                 var results = val.PlayerDetails;
                 var score = val.Score;
-                var session = val.Session;
+                var session = CURR_SESS_COUNT;//val.Session;
 
                 var resultCounter = 0;
+
+                CURRENTLY_PLAYING = true;
+
+                if (IS_HEAD_TO_HEAD) {
+                    if (TENSORFLOW_CURRENT_GAME_DONE) {
+                        TENSORFLOW_CURRENT_GAME_DONE(false);
+                    }
+                }
 
                 var run = function () {
 
@@ -189,8 +234,11 @@ function TensorFlowSimulator(donePlaying, sessionData, tensorflowShowChart, show
                             drawFunction.UpdatePlayerDetails(self.Canvas(), paperImages, self.DAY_PAPER_CACHE(), playerDetails, self);
                             drawFunction.UpdateSummaryDetails(self.Canvas(), {
                                 CurrentStatus: self.CurrentStatus(),
-                                CurrentSession: self.CurrentSession(),
-                                CurrentSessionScore: self.CurrentSessionScore()
+                                CurrentSession: session,
+                                CurrentSessionScore: self.CurrentSessionScore(),
+
+                                StorageCostPerDay: "$"+ LOGISTIC_SETTINGS.StorageCostPerDay(),
+                                BacklogCostPerDay: "$"+ LOGISTIC_SETTINGS.BacklogCostPerDay()
                             });
 
 
@@ -227,59 +275,94 @@ function TensorFlowSimulator(donePlaying, sessionData, tensorflowShowChart, show
                         }
 
                         if (resultCounter < results.length) {
+                            disableSettingsControls(true);
+
+                            if (IS_HEAD_TO_HEAD) {
+                                TENSORFLOW_CURRENT_GAME_DONE(false);
+                            }
                             run();
-                        } else {
+                        } else if(resultCounter >= results.length) {
+
+                            CURRENTLY_PLAYING = false;
 
                             self.Playing(false);
                             val.Done(true);
                             self.Day(0);
-                            self.CurrentStatus("Waiting...");
+                            //self.CurrentStatus("Ready session " + eval(session + 1));
+                            self.CurrentStatus("Loading data...");
 
                             self.CurrentSessionScore(score);
 
                             //clearTimeout(this);
                             self.CurrentSession(session);
 
+
+                            if (IS_HEAD_TO_HEAD) {
+
+                                TENSORFLOW_CURRENT_GAME_DONE(true);
+                                CURRENT_TF_SESSION(session);
+
+                                console.log("tf session = " + session);
+                                PLAY_TRIGGER(repo2.GenerateGUID());
+                            }
+
                             self.SessionScores.push({ Session: session, Score: score });
 
-                            var table = $("#useAIble-table-container");
+                            var table = $("#tensorflow-table-container");
                             table.animate({ scrollTop: table.prop("scrollHeight") - table.height() });
 
 
                             if (self.CurrentSession() == self.NumberOfSessions()) {
 
-                                self.CurrentSession(session - 1);
+                                self.CurrentSession(-1);
                                 self.CurrentStatus("Done");
 
                                 if (USEAIBLE_DONE_PLAYING != undefined) {
 
                                     if (USEAIBLE_DONE_PLAYING()) {
                                         disableSettingsControls(false);
-                                        $(".outer-chart-container").show();
-                                        SHOW_COMPARISON_CHART(SESSION_DATA());
+                                        //$(".outer-chart-container").show();
+                                        //SHOW_COMPARISON_CHART(SESSION_DATA());
+                                        $(".view-chart").show();
                                     }
 
                                 } else {
 
                                     disableSettingsControls(false);
-                                    $(".outer-chart-container").show();
-                                   SHOW_COMPARISON_CHART(SESSION_DATA());
+                                   // $(".outer-chart-container").show();
+                                    //SHOW_COMPARISON_CHART(SESSION_DATA());
+                                    $(".view-chart").show();
                                 }
 
                                 TENSORFLOW_SHOWCHART(true);
                                 DONE_PLAYING(true);
+
+                                //client2.unsubscribe(USER_TOKEN + "/tensorflow/outputFromServer");
+                                //client2.unsubscribe(USER_TOKEN + "/logisticSessionScores");
+                                //client2.unsubscribe(USER_TOKEN + "/logisticOutputs");
+
+                                if (client2) {
+                                    if (client2.isConnected()) {
+                                        client2.disconnect();
+                                    }
+                                }
                             }
 
                             drawFunction.UpdateSummaryDetails(self.Canvas(), {
                                 CurrentStatus: self.CurrentStatus(),
                                 CurrentSession: self.CurrentSession(),
-                                CurrentSessionScore: self.CurrentSessionScore()
+                                CurrentSessionScore: self.CurrentSessionScore(),
+
+                                StorageCostPerDay: "$"+ LOGISTIC_SETTINGS.StorageCostPerDay(),
+                                BacklogCostPerDay: "$"+ LOGISTIC_SETTINGS.BacklogCostPerDay()
                             });
 
-                            self.StartPlay(self.StartPlay() ? false : true);
+                            if (!IS_HEAD_TO_HEAD) {
+                                self.StartGame(self.StartGame() ? false : true);
+                            }
                         }
 
-                    }, self.SelectedSpeedOption().Id);
+                    }, SPEED().Id);
 
                 };
 
@@ -292,6 +375,141 @@ function TensorFlowSimulator(donePlaying, sessionData, tensorflowShowChart, show
         });
     });
 
+    self.StartSync = function (logisticData) {
+
+        //$.each(logisticData, function (index, val) {
+
+                self.Playing(true);
+                self.CurrentStatus("Tensor Flow Playing...");
+
+                var results = logisticData.PlayerDetails;
+                var score = logisticData.Score;
+                var session = logisticData.Session;
+
+                var resultCounter = 0;
+
+                CURRENTLY_PLAYING = true;
+                TENSORFLOW_CURRENT_GAME_DONE(false);
+
+                var run = function () {
+
+                    setTimeout(function () {
+
+                        var val_r = results[resultCounter];
+                        if (val_r) {
+
+                            resultCounter++;
+
+                            self.Day(eval(self.Day() + 1));
+
+                            var playerDetails;
+                            var paperImages = {
+                                RETAILER_PAPER_CACHE: self.RETAILER_PAPER_CACHE(),
+                                WHOLESALER_PAPER_CACHE: self.WHOLESALER_PAPER_CACHE(),
+                                DISTRIBUTOR_PAPER_CACHE: self.DISTRIBUTOR_PAPER_CACHE(),
+                                FACTORY_PAPER_CACHE: self.FACTORY_PAPER_CACHE()
+                            };
+
+                            playerDetails = val_r.Results;
+
+                            if (resultCounter == results.length) {
+                                $.each(self.LogisticOutputs(), function (index_out, val_out) {
+                                    if (val_out.Session == session) {
+                                        self.FinalResults(val_out.Outputs);
+                                        return false;
+                                    }
+                                });
+                            }
+
+                            drawFunction.UpdatePlayerDetails(self.Canvas(), paperImages, self.DAY_PAPER_CACHE(), playerDetails, self);
+                            drawFunction.UpdateSummaryDetails(self.Canvas(), {
+                                CurrentStatus: self.CurrentStatus(),
+                                CurrentSession: session,
+                                CurrentSessionScore: self.CurrentSessionScore(),
+
+                                StorageCostPerDay: "$" + LOGISTIC_SETTINGS.StorageCostPerDay(),
+                                BacklogCostPerDay: "$" + LOGISTIC_SETTINGS.BacklogCostPerDay()
+                            });
+                        }
+
+                        if (resultCounter < results.length) {
+
+                            disableSettingsControls(true);
+
+                            TENSORFLOW_CURRENT_GAME_DONE(false);
+
+                            run();
+                        } else if (resultCounter >= results.length) {
+
+                            CURRENTLY_PLAYING = false;
+
+                            self.Playing(false);
+                            logisticData.Done(true);
+                            self.Day(0);
+                            self.CurrentStatus("Loading data...");
+
+                            self.CurrentSessionScore(score);
+
+                            self.CurrentSession(session);
+
+                            TENSORFLOW_CURRENT_GAME_DONE(true);
+                            CURRENT_TF_SESSION(session);
+
+                            console.log("tf session = " + session);
+
+                            self.SessionScores.push({ Session: session, Score: score });
+
+                            var table = $("#tensorflow-table-container");
+                            table.animate({ scrollTop: table.prop("scrollHeight") - table.height() });
+
+
+                            if (self.CurrentSession() == self.NumberOfSessions()) {
+
+                                self.CurrentSession(-1);
+                                self.CurrentStatus("Done");
+
+                                if (USEAIBLE_DONE_PLAYING != undefined) {
+
+                                    if (USEAIBLE_DONE_PLAYING()) {
+                                        disableSettingsControls(false);
+                                        $(".view-chart").show();
+                                    }
+
+                                } else {
+
+                                    disableSettingsControls(false);
+                                    $(".view-chart").show();
+                                }
+
+                                TENSORFLOW_SHOWCHART(true);
+                                DONE_PLAYING(true);
+
+                                if (client2) {
+                                    if (client2.isConnected()) {
+                                        client2.disconnect();
+                                    }
+                                }
+                            }
+
+                            drawFunction.UpdateSummaryDetails(self.Canvas(), {
+                                CurrentStatus: self.CurrentStatus(),
+                                CurrentSession: self.CurrentSession(),
+                                CurrentSessionScore: self.CurrentSessionScore(),
+
+                                StorageCostPerDay: "$" + LOGISTIC_SETTINGS.StorageCostPerDay(),
+                                BacklogCostPerDay: "$" + LOGISTIC_SETTINGS.BacklogCostPerDay()
+                            });
+                        }
+
+                    }, SPEED().Id);
+
+                };
+
+                run();
+
+        //});
+    };
+
     self.Done = ko.observable(false);
 
     var USEAIBLE_DONE_PLAYING;
@@ -299,32 +517,74 @@ function TensorFlowSimulator(donePlaying, sessionData, tensorflowShowChart, show
     var SHOW_COMPARISON_CHART;
     var DONE_PLAYING;
     var TENSORFLOW_SHOWCHART;
+    var LOGISTIC_SETTINGS;
+    var SPEED;
 
-    self.Play = function (userToken, numSessions, logisticSettings, drawGame, moveBeer, speed, useAIbleDonePlaying, sessionScore, showChart, tensorflowDonePlaying, tensorflowShowChart) {
+    var USEAIBLE_CURRENT_GAME_DONE;
+    var TENSORFLOW_CURRENT_GAME_DONE;
 
-        SHOW_COMPARISON_CHART = showChart;
-        SESSION_DATA = sessionScore;
-        USEAIBLE_DONE_PLAYING = useAIbleDonePlaying;
-        DONE_PLAYING = tensorflowDonePlaying;
-        TENSORFLOW_SHOWCHART = tensorflowShowChart;
+    var IS_HEAD_TO_HEAD = false;
+    var CURRENTLY_PLAYING = false;
 
-        USER_TOKEN = userToken;
-        self.NumberOfSessions(numSessions);
+    var CURRENT_TF_SESSION;
+    var PLAY_TRIGGER;
 
-        moveFunction = moveBeer;
-        drawFunction = drawGame;
-        self.SelectedSpeedOption(speed);
+    self.Play = function (userToken, numSessions, logisticSettings, drawGame, moveBeer, speed, useAIbleDonePlaying, sessionScore, showChart, tensorflowDonePlaying, tensorflowShowChart, useAIbleCurrentGameDonePlaying, tensorflowCurrentGameDonePlaying,
+        currentTFSession, playTrigger) {
 
-        var resultsList = [];
-        var resultsListIndexCounter = 0;
-        client2.onMessageArrived = function (msg) {
+        try {
 
-            //if (!self.Done()) {
+            connect(userToken, drawGame);
+
+            $(".view-chart").hide();
+
+            SPEED = speed;
+            LOGISTIC_SETTINGS = logisticSettings;
+            SHOW_COMPARISON_CHART = showChart;
+            SESSION_DATA = sessionScore;
+            USEAIBLE_DONE_PLAYING = useAIbleDonePlaying;
+            DONE_PLAYING = tensorflowDonePlaying;
+            TENSORFLOW_SHOWCHART = tensorflowShowChart;
+
+            USER_TOKEN = userToken;
+            self.NumberOfSessions(numSessions);
+
+            USEAIBLE_CURRENT_GAME_DONE = useAIbleCurrentGameDonePlaying;
+            TENSORFLOW_CURRENT_GAME_DONE = tensorflowCurrentGameDonePlaying;
+
+            if (TENSORFLOW_CURRENT_GAME_DONE) {
+                TENSORFLOW_CURRENT_GAME_DONE(false);
+            }
+
+            IS_HEAD_TO_HEAD = USEAIBLE_CURRENT_GAME_DONE ? true : false;
+
+            if (IS_HEAD_TO_HEAD) {
+                CURRENT_TF_SESSION = currentTFSession;
+
+                PLAY_TRIGGER = playTrigger;
+
+                PLAY_TRIGGER(repo2.GenerateGUID());
+            }
+
+            moveFunction = moveBeer;
+            drawFunction = drawGame;
+            self.SelectedSpeedOption(speed);
+
+            var resultsList = [];
+            var resultsListIndexCounter = 0;
+            client2.onMessageArrived = function (msg) {
+
+                if (msg.duplicate) {
+                    console.log('tensorflow found duplicate');
+                    return;
+                }
+
+                //if (!self.Done()) {
 
                 //self.CurrentStatus("Tensor Flow Playing...");
 
                 var msgOrigin = msg.destinationName;
-                var playerDetailsRoute = userToken + "/outputFromServer";
+                var playerDetailsRoute = userToken + "/tensorflow/outputFromServer";
                 var requestedOrdersRoute = userToken + "/requestOrder";
                 var receivedOrdersRoute = userToken + "/receiveOrder";
                 var logisticSessionScoresRoute = userToken + "/logisticSessionScores";
@@ -346,11 +606,11 @@ function TensorFlowSimulator(donePlaying, sessionData, tensorflowShowChart, show
 
 
                         self.PlayerDetails([]);
-                        $.each(output.PlayerDetails, function (index, player) {
+                        $.each(output, function (index, player) {
 
                             var player = new PlayerVM(player.Name, player.Inventory, player.Expected, player.Shipped, player.Ordered, player.StorageCost, player.BacklogCost);
 
-                            player.Session(output.Session);
+                            //player.Session(output.Session);
 
                             self.PlayerDetails.push(player);
 
@@ -440,7 +700,23 @@ function TensorFlowSimulator(donePlaying, sessionData, tensorflowShowChart, show
 
                         resultsList = [];
 
-                        self.StartPlay(self.StartPlay() ? false : true);
+                        if (IS_HEAD_TO_HEAD) {
+                            if (output.Session == 1) {
+                                TENSORFLOW_CURRENT_GAME_DONE(true);
+                                //CURRENTLY_PLAYING = true;
+                            }
+                            //else {
+                            //    if (!CURRENTLY_PLAYING) {
+                            //        TENSORFLOW_CURRENT_GAME_DONE(true);
+                            //    }
+                            //}
+
+                            //PLAY_TRIGGER(repo2.GenerateGUID());
+                        }
+
+                        if (!IS_HEAD_TO_HEAD) {
+                            self.StartGame(self.StartGame() ? false : true);
+                        }
 
                         break;
 
@@ -453,6 +729,19 @@ function TensorFlowSimulator(donePlaying, sessionData, tensorflowShowChart, show
 
                             self.LogisticOutputs.push({ Session: output.Session, Outputs: output.Outputs });
                         }
+
+                        //if (IS_HEAD_TO_HEAD) {
+                        //    if (output.Session == 1) {
+                        //        TENSORFLOW_CURRENT_GAME_DONE(true);
+                        //        CURRENTLY_PLAYING = true;
+                        //    } else {
+                        //        if (!CURRENTLY_PLAYING) {
+                        //            TENSORFLOW_CURRENT_GAME_DONE(true);
+                        //        }
+                        //    }
+
+                        //    PLAY_TRIGGER(repo2.GenerateGUID());
+                        //}
 
                         break;
 
@@ -490,34 +779,40 @@ function TensorFlowSimulator(donePlaying, sessionData, tensorflowShowChart, show
 
                 //drawGame.UpdatePlayerDetails(self.Canvas(), paperImages, self.DAY_PAPER_CACHE(), self.PlayerDetails(), self);
                 //drawGame.UpdateSummaryDetails(self.Canvas(), summaryLabels);
-            //}
-        };
+                //}
+            };
 
-        logisticSettings.random_action_prob(self.RandomActionProb());
-        logisticSettings.RANDOM_ACTION_DECAY(self.RandomActionDecay());
-        logisticSettings.HIDDEN1_SIZE(self.Hidden1Size());
-        logisticSettings.HIDDEN2_SIZE(self.Hidden2Size());
-        logisticSettings.LEARNING_RATE(self.LearningRate());
-        logisticSettings.MINIBATCH_SIZE(self.MiniBatchSize());
-        logisticSettings.DISCOUNT_FACTOR(self.DiscountFactor());
-        logisticSettings.TARGET_UPDATE_FREQ(self.TargetUpdateFreq());
+            logisticSettings.random_action_prob(self.RandomActionProb());
+            logisticSettings.RANDOM_ACTION_DECAY(self.RandomActionDecay());
+            logisticSettings.HIDDEN1_SIZE(self.Hidden1Size());
+            logisticSettings.HIDDEN2_SIZE(self.Hidden2Size());
+            logisticSettings.LEARNING_RATE(self.LearningRate());
+            logisticSettings.MINIBATCH_SIZE(self.MiniBatchSize());
+            logisticSettings.DISCOUNT_FACTOR(self.DiscountFactor());
+            logisticSettings.TARGET_UPDATE_FREQ(self.TargetUpdateFreq());
 
-        var settings = logisticSettings;
+            var settings = logisticSettings;
 
-        repo.PlayLogisticSimulatorTF(userToken, self.NumberOfSessions(), settings).done(function (res) {
+            repo.PlayLogisticSimulatorTF(userToken, self.NumberOfSessions(), settings).done(function (res) {
 
-            disableSettingsControls(true);
-            self.Done(false);
+                disableSettingsControls(true);
+                self.Done(false);
 
-            self.CurrentStatus("Waiting...");
+                self.CurrentStatus("Waiting...");
 
-            drawGame.UpdateSummaryDetails(self.Canvas(), {
-                CurrentStatus: self.CurrentStatus(),
-                CurrentSession: self.CurrentSession(),
-                CurrentSessionScore: self.CurrentSessionScore()
+                drawGame.UpdateSummaryDetails(self.Canvas(), {
+                    CurrentStatus: self.CurrentStatus(),
+                    CurrentSession: self.CurrentSession(),
+                    CurrentSessionScore: self.CurrentSessionScore(),
+
+                    StorageCostPerDay: "$"+ LOGISTIC_SETTINGS.StorageCostPerDay(),
+                    BacklogCostPerDay: "$"+ LOGISTIC_SETTINGS.BacklogCostPerDay()
+                });
+
             });
-
-        });
+        } catch (exception) {
+            console.log(exception);
+        }
 
     };
 
