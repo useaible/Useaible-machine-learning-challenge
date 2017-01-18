@@ -1,8 +1,11 @@
-﻿
+
 var repo3 = new DRNNRepository();
-var client3 = new Paho.MQTT.Client("dev.useaible.com", 61614, repo3.GenerateGUID());
+//var client3 = new Paho.MQTT.Client("dev.useaible.com", 61614, repo3.GenerateGUID());
+//var client3 = new Paho.MQTT.Client(MQTT_URL, MQTT_PORT, repo3.GenerateGUID());
 
 function EncogSimulator(donePlaying, sessionData, encogShowChart, showComparisonChart) {
+
+    client3 = new Paho.MQTT.Client(MQTT_URL, MQTT_PORT, repo3.GenerateGUID());
 
     var self = this;
     var USER_TOKEN;
@@ -97,50 +100,71 @@ function EncogSimulator(donePlaying, sessionData, encogShowChart, showComparison
     self.CurrentStatus = ko.observable("");
 
     var connect = function (userToken, drawGame) {
-        client3.connect({
-            keepAliveInterval: 1000, // 10mins (60s*10)
-            onSuccess: function () {
+        if (client3) {
+            if (!client3.isConnected()) {
+                client3.connect({
+                    keepAliveInterval: 1800,
+                    timeout: 10000,
+                    onFailure: function (fl) {
+                        console.log(fl.errorMessage);
+                    },
+                    onSuccess: function () {
 
-                drawGame.UpdateSummaryDetails(self.Canvas(), {
-                    CurrentStatus: self.CurrentStatus(),
-                    CurrentSession: self.CurrentSession(),
-                    CurrentSessionScore: self.CurrentSessionScore()
+                        drawGame.UpdateSummaryDetails(self.Canvas(), {
+                            CurrentStatus: self.CurrentStatus(),
+                            CurrentSession: self.CurrentSession(),
+                            CurrentSessionScore: self.CurrentSessionScore(),
+
+                            StorageCostPerDay: "",
+                            BacklogCostPerDay: ""
+                        });
+
+                        //client3.subscribe(userToken + "/encog/outputFromServer", { qos: 1 });
+                        //client3.subscribe(userToken + "/encog/requestOrder", { qos: 1 });
+                        //client3.subscribe(userToken + "/encog/receiveOrder");
+                        //client3.subscribe(userToken + "/encog/logisticSessionScores", { qos: 1 });
+                        //client3.subscribe(userToken + "/encog/logisticOutputs", { qos: 1 });
+                        //client3.subscribe(userToken + "/encog/test_data", { qos: 1 });
+                        //client3.subscribe(userToken + "/encog/tensorflowTimeout", { qos: 1 });
+                        client3.subscribe(userToken + "/encog/logistic/simulation_output", { qos: 1 });
+
+                        console.log("subscribed to encog logistic simulator with token = " + userToken);
+                    }
                 });
-
-                client3.subscribe(userToken + "/encog/outputFromServer");
-                client3.subscribe(userToken + "/encog/requestOrder");
-                client3.subscribe(userToken + "/encog/receiveOrder");
-                client3.subscribe(userToken + "/encog/logisticSessionScores");
-                client3.subscribe(userToken + "/encog/logisticOutputs");
-                client3.subscribe(userToken + "/encog/test_data");
-                client3.subscribe(userToken + "/encog/tensorflowTimeout");
-                client3.subscribe(userToken + "/encog/logistic/simulation_output");
-
-                console.log("subscribed to encog logistic simulator with token = " + userToken);
             }
-        });
+        }
+
+        client3.onConnectionLost = function (msg) {
+
+            console.log(msg.errorMessage);
+
+            //disableSettingsControls(false);
+            //connect(userToken, drawGame);
+        };
     };
 
     self.Init = function (userToken, drawGame) {
 
-        client3.onConnectionLost = function (msg) {
-            console.log("connection lost");
-            disableSettingsControls(false);
-            connect(userToken, drawGame);
-        };
+        //client3.onConnectionLost = function (msg) {
 
-        if (!client3.isConnected()) {
-            connect(userToken, drawGame);
-        } else {
-            client3.subscribe(userToken + "/encog/outputFromServer");
-            client3.subscribe(userToken + "/encog/requestOrder");
-            client3.subscribe(userToken + "/encog/receiveOrder");
-            client3.subscribe(userToken + "/encog/logisticSessionScores");
-            client3.subscribe(userToken + "/encog/logisticOutputs");
-            client3.subscribe(userToken + "/encog/test_data");
-            client3.subscribe(userToken + "/tensorflowTimeout");
-            client3.subscribe(userToken + "/encog/logistic/simulation_output");
-        }
+        //    console.log(msg.errorMessage);
+
+        //    //disableSettingsControls(false);
+        //    connect(userToken, drawGame);
+        //};
+
+        //if (!client3.isConnected()) {
+        //    connect(userToken, drawGame);
+        //} else {
+        //    //client3.subscribe(userToken + "/encog/outputFromServer", { qos: 1 });
+        //    //client3.subscribe(userToken + "/encog/requestOrder", { qos: 1 });
+        //    //client3.subscribe(userToken + "/encog/receiveOrder");
+        //    //client3.subscribe(userToken + "/encog/logisticSessionScores", { qos: 1 });
+        //    //client3.subscribe(userToken + "/encog/logisticOutputs", { qos: 1 });
+        //    //client3.subscribe(userToken + "/encog/test_data", { qos: 1 });
+        //    //client3.subscribe(userToken + "/tensorflowTimeout", { qos: 1 });
+        //    client3.subscribe(userToken + "/encog/logistic/simulation_output", { qos: 1 });
+        //}
 
     };
 
@@ -154,21 +178,29 @@ function EncogSimulator(donePlaying, sessionData, encogShowChart, showComparison
     self.LogisticOutputs = ko.observableArray([]);
     self.Playing = ko.observable(false);
 
-    self.StartPlay = ko.observable(false);
+    self.StartGame = ko.observable(false);
 
     var CURRENT_SESSION_COUNTER = 0;
     var SESSION_COUNTER = 0;
 
-    self.StartPlay.subscribe(function () {
+    self.StartGame.subscribe(function () {
         $.each(self.Logistics(), function (index, val) {
 
             if (!val.Done() && !self.Playing()) {
 
                 CURRENT_SESSION_COUNTER++;
 
+                CURRENTLY_PLAYING = true;
+
+                if (IS_HEAD_TO_HEAD) {
+                    ENCOG_CURRENT_GAME_DONE(false);
+                }
+
                 self.Playing(true);
                 self.CurrentStatus("Encog Playing...");
-                self.CurrentSession(CURRENT_SESSION_COUNTER-1);
+                self.CurrentSession(CURRENT_SESSION_COUNTER);
+
+                disableSettingsControls(true);
 
                 var simulationResults = val.PlayerDetails;
                 var score = val.Score;
@@ -206,28 +238,45 @@ function EncogSimulator(donePlaying, sessionData, encogShowChart, showComparison
                             drawFunction.UpdateSummaryDetails(self.Canvas(), {
                                 CurrentStatus: self.CurrentStatus(),
                                 CurrentSession: self.CurrentSession(),
-                                CurrentSessionScore: self.CurrentSessionScore()
+                                CurrentSessionScore: self.CurrentSessionScore(),
+
+                                StorageCostPerDay: "$"+ LOGISTIC_SETTINGS.StorageCostPerDay(),
+                                BacklogCostPerDay: "$"+ LOGISTIC_SETTINGS.BacklogCostPerDay()
                             });
                         }
 
                         if (resultCounter < simulationResults.length) {
+                            disableSettingsControls(true);
                             run();
-                        } else {
+                        } else if(resultCounter >= simulationResults.length) {
+
+                            if (IS_HEAD_TO_HEAD) {
+                                ENCOG_CURRENT_GAME_DONE(true);
+                                CURRENT_ENCOG_SESSION(session);
+
+                                PLAY_TRIGGER(repo3.GenerateGUID());
+
+                                console.log("encog session = " + session);
+                            }
+
+                            CURRENTLY_PLAYING = false;
 
                             self.Playing(false);
                             val.Done(true);
 
                             self.Day(0);
-                            self.CurrentStatus("Waiting...");
+                            //self.CurrentStatus("Ready session " + eval(CURRENT_SESSION_COUNTER + 1));
+                            self.CurrentStatus("Loading data...");
 
-                            self.CurrentSession(CURRENT_SESSION_COUNTER-1);
+                            self.CurrentSession(session);
                             self.CurrentSessionScore(numberToCurrency(score));
                             
 
-                            self.SessionScores.push({ Session: CURRENT_SESSION_COUNTER, Score: numberToCurrency(score) });
+                            self.SessionScores.push({ Session: session, Score: numberToCurrency(score) });
 
-                            if (CURRENT_SESSION_COUNTER >= SESSION_COUNTER) {
+                            if (session >= SESSION_COUNTER) {
 
+                                self.CurrentSession(-1);
                                 self.CurrentStatus("Done");
 
                                 if (USEAIBLE_DONE_PLAYING != undefined) {
@@ -235,20 +284,27 @@ function EncogSimulator(donePlaying, sessionData, encogShowChart, showComparison
                                     if (USEAIBLE_DONE_PLAYING()) {
                                         $(".view-chart").show();
                                         disableSettingsControls(false);
-                                        $(".outer-chart-container").show();
-                                        SHOW_COMPARISON_CHART(SESSION_DATA());
+                                        //$(".outer-chart-container").show();
+                                        //SHOW_COMPARISON_CHART(SESSION_DATA());
                                     }
 
                                 } else {
 
                                     $(".view-chart").show();
                                     disableSettingsControls(false);
-                                    $(".outer-chart-container").show();
-                                    SHOW_COMPARISON_CHART(SESSION_DATA());
+                                    //$(".outer-chart-container").show();
+                                    //SHOW_COMPARISON_CHART(SESSION_DATA());
                                 }
 
                                 ENCOG_SHOWCHART(true);
                                 DONE_PLAYING(true);
+
+                                //client3.unsubscribe(USER_TOKEN + "/encog/logistic/simulation_output");
+                                if (client3) {
+                                    if (client3.isConnected()) {
+                                        client3.disconnect();
+                                    }
+                                }
                             }
 
                             var table = $("#encog-table-container");
@@ -257,10 +313,15 @@ function EncogSimulator(donePlaying, sessionData, encogShowChart, showComparison
                             drawFunction.UpdateSummaryDetails(self.Canvas(), {
                                 CurrentStatus: self.CurrentStatus(),
                                 CurrentSession: self.CurrentSession(),
-                                CurrentSessionScore: self.CurrentSessionScore()
+                                CurrentSessionScore: self.CurrentSessionScore(),
+
+                                StorageCostPerDay: "$"+ LOGISTIC_SETTINGS.StorageCostPerDay(),
+                                BacklogCostPerDay: "$"+ LOGISTIC_SETTINGS.BacklogCostPerDay()
                             });
 
-                            self.StartPlay(self.StartPlay() ? false : true);
+                            if (!IS_HEAD_TO_HEAD) {
+                                self.StartGame(self.StartGame() ? false : true);
+                            }
                         }
 
                     }, speedOption().Id);
@@ -276,6 +337,139 @@ function EncogSimulator(donePlaying, sessionData, encogShowChart, showComparison
         });
     });
 
+    self.StartSync = function (logisticData) {
+
+        CURRENTLY_PLAYING = true;
+        ENCOG_CURRENT_GAME_DONE(false);
+
+        CURRENT_SESSION_COUNTER++;
+
+        self.Playing(true);
+        self.CurrentStatus("Encog Playing...");
+        self.CurrentSession(CURRENT_SESSION_COUNTER);
+
+        disableSettingsControls(true);
+
+        var simulationResults = logisticData.PlayerDetails;
+        var score = logisticData.Score;
+        var session = logisticData.Session;
+        var settings = logisticData.Settings;
+
+        var resultCounter = 0;
+
+        var run = function () {
+
+            setTimeout(function () {
+
+                var val_r = simulationResults[resultCounter];
+                if (val_r) {
+
+                    resultCounter++;
+
+                    self.Day(eval(self.Day() + 1));
+
+                    var paperImages = {
+                        RETAILER_PAPER_CACHE: self.RETAILER_PAPER_CACHE(),
+                        WHOLESALER_PAPER_CACHE: self.WHOLESALER_PAPER_CACHE(),
+                        DISTRIBUTOR_PAPER_CACHE: self.DISTRIBUTOR_PAPER_CACHE(),
+                        FACTORY_PAPER_CACHE: self.FACTORY_PAPER_CACHE()
+                    };
+
+
+                    if (resultCounter == simulationResults.length) {
+                        self.FinalResults(settings);
+                    }
+
+                    var playerDetails = val_r.Results;
+
+                    drawFunction.UpdatePlayerDetails(self.Canvas(), paperImages, self.DAY_PAPER_CACHE(), playerDetails, self);
+                    drawFunction.UpdateSummaryDetails(self.Canvas(), {
+                        CurrentStatus: self.CurrentStatus(),
+                        CurrentSession: self.CurrentSession(),
+                        CurrentSessionScore: self.CurrentSessionScore(),
+
+                        StorageCostPerDay: "$" + LOGISTIC_SETTINGS.StorageCostPerDay(),
+                        BacklogCostPerDay: "$" + LOGISTIC_SETTINGS.BacklogCostPerDay()
+                    });
+                }
+
+                if (resultCounter < simulationResults.length) {
+                    disableSettingsControls(true);
+                    run();
+                } else if (resultCounter >= simulationResults.length) {
+
+                    ENCOG_CURRENT_GAME_DONE(true);
+                    CURRENT_ENCOG_SESSION(session);
+
+                    PLAY_TRIGGER(repo3.GenerateGUID());
+
+                    console.log("encog session = " + session);
+
+                    CURRENTLY_PLAYING = false;
+
+                    self.Playing(false);
+                    logisticData.Done(true);
+
+                    self.Day(0);
+                    self.CurrentStatus("Loading data...");
+
+                    self.CurrentSession(session);
+                    self.CurrentSessionScore(numberToCurrency(score));
+
+                    self.SessionScores.push({ Session: session, Score: numberToCurrency(score) });
+
+                    if (session >= SESSION_COUNTER) {
+
+                        self.CurrentSession(-1);
+                        self.CurrentStatus("Done");
+
+                        if (USEAIBLE_DONE_PLAYING != undefined) {
+
+                            if (USEAIBLE_DONE_PLAYING()) {
+                                $(".view-chart").show();
+                                disableSettingsControls(false);
+                            }
+
+                        } else {
+
+                            $(".view-chart").show();
+                            disableSettingsControls(false);
+                        }
+
+                        ENCOG_SHOWCHART(true);
+                        DONE_PLAYING(true);
+
+                        if (client3) {
+                            if (client3.isConnected()) {
+                                client3.disconnect();
+                            }
+                        }
+                    }
+
+                    var table = $("#encog-table-container");
+                    table.animate({ scrollTop: table.prop("scrollHeight") - table.height() });
+
+                    drawFunction.UpdateSummaryDetails(self.Canvas(), {
+                        CurrentStatus: self.CurrentStatus(),
+                        CurrentSession: self.CurrentSession(),
+                        CurrentSessionScore: self.CurrentSessionScore(),
+
+                        StorageCostPerDay: "$" + LOGISTIC_SETTINGS.StorageCostPerDay(),
+                        BacklogCostPerDay: "$" + LOGISTIC_SETTINGS.BacklogCostPerDay()
+                    });
+
+                    if (!IS_HEAD_TO_HEAD) {
+                        self.StartGame(self.StartGame() ? false : true);
+                    }
+                }
+
+            }, speedOption().Id);
+
+        };
+
+        run();
+    };
+
     self.Done = ko.observable(false);
     self.EncogSessionScores = [];
 
@@ -285,115 +479,178 @@ function EncogSimulator(donePlaying, sessionData, encogShowChart, showComparison
     var SHOW_COMPARISON_CHART;
     var ENCOG_SHOWCHART;
     var DONE_PLAYING;
+    var LOGISTIC_SETTINGS;
 
-    self.Play = function (userToken, numSessions, logisticSettings, drawGame, moveBeer, speed, useAIbleDonePlaying, sessionScore, showChart, donePlaying, encogShowChart) {
+    var USEAIBLE_CURRENT_GAME_DONE;
+    var ENCOG_CURRENT_GAME_DONE;
+
+    var IS_HEAD_TO_HEAD = false;
+    var CURRENTLY_PLAYING = false;
+
+    var CURRENT_ENCOG_SESSION;
+    var PLAY_TRIGGER;
+
+    self.Play = function (userToken, numSessions, logisticSettings, drawGame, moveBeer, speed, useAIbleDonePlaying, sessionScore, showChart, donePlaying, encogShowChart, useAIbleCurrentGameDonePlaying,
+        encogCurrentGameDonePlaying, currentEncogSession, playTrigger) {
+
+        try {
+
+            connect(userToken, drawGame);
         
-        $(".view-chart").hide();
-        DONE_PLAYING = donePlaying;
-        ENCOG_SHOWCHART = encogShowChart;
-        SHOW_COMPARISON_CHART = showChart;
-        SESSION_DATA = sessionScore;
-        USEAIBLE_DONE_PLAYING = useAIbleDonePlaying;
-        SESSION_COUNTER = 0;
-        CURRENT_SESSION_COUNTER = 0;
+            $(".view-chart").hide();
 
-        USER_TOKEN = userToken;
-        self.NumberOfSessions(numSessions);
+            LOGISTIC_SETTINGS = logisticSettings;
 
-        moveFunction = moveBeer;
-        drawFunction = drawGame;
-        speedOption = speed;
+            DONE_PLAYING = donePlaying;
+            ENCOG_SHOWCHART = encogShowChart;
+            SHOW_COMPARISON_CHART = showChart;
+            SESSION_DATA = sessionScore;
+            USEAIBLE_DONE_PLAYING = useAIbleDonePlaying;
+            SESSION_COUNTER = 0;
+            CURRENT_SESSION_COUNTER = 0;
 
-        self.EncogSessionScores = [];
+            USEAIBLE_CURRENT_GAME_DONE = useAIbleCurrentGameDonePlaying;
+            ENCOG_CURRENT_GAME_DONE = encogCurrentGameDonePlaying;
 
-        var resultsList = [];
-        var resultsListIndexCounter = 0;
-        client3.onMessageArrived = function (msg) {
+            if (ENCOG_CURRENT_GAME_DONE) {
+                ENCOG_CURRENT_GAME_DONE(false);
+            }
 
-            var msgOrigin = msg.destinationName;
-            var simulationOutputRoute = userToken + "/encog/logistic/simulation_output";
+            IS_HEAD_TO_HEAD = USEAIBLE_CURRENT_GAME_DONE ? true : false;
 
-            switch (msgOrigin) {
+            if (IS_HEAD_TO_HEAD) {
 
-                case simulationOutputRoute:
+                CURRENT_ENCOG_SESSION = currentEncogSession;
 
-                    SESSION_COUNTER++;
+                PLAY_TRIGGER = playTrigger;
 
-                    var output = eval("(" + msg.payloadString + ")");
+                PLAY_TRIGGER(repo3.GenerateGUID());
+            }
 
-                    var score = output.Score;
-                    var settings = output.Settings;
+            USER_TOKEN = userToken;
+            self.NumberOfSessions(numSessions);
 
-                    $.each(output.SimulatedDays, function (index_day, value_day) {
+            moveFunction = moveBeer;
+            drawFunction = drawGame;
+            speedOption = speed;
 
-                        var dayNum = value_day.Day;
-                        var playerDetails = value_day.PlayerDetails;
+            self.EncogSessionScores = [];
 
-                        self.PlayerDetails([]);
-                        $.each(playerDetails, function (index_player, value_player) {
+            var resultsList = [];
+            var resultsListIndexCounter = 0;
+            client3.onMessageArrived = function (msg) {
 
-                            var player = new PlayerVM(value_player.Name,
-                                value_player.Inventory ? value_player.Inventory : 0,
-                                value_player.Expected ? value_player.Expected : 0,
-                                value_player.Shipped ? value_player.Shipped : 0,
-                                value_player.Ordered ? value_player.Ordered : 0,
-                                value_player.StorageCost ? value_player.StorageCost : 0,
-                                value_player.BacklogCost? value_player.BacklogCost : 0);
+                if (msg.duplicate) {
+                    console.log('encog found duplicate');
+                    return;
+                }
 
-                            player.Session(self.CurrentSession() + 1);
+                var msgOrigin = msg.destinationName;
+                var simulationOutputRoute = userToken + "/encog/logistic/simulation_output";
 
-                            self.PlayerDetails.push(player);
+                switch (msgOrigin) {
+
+                    case simulationOutputRoute:
+
+                        SESSION_COUNTER++;
+
+                        if (IS_HEAD_TO_HEAD) {
+                            if (SESSION_COUNTER == 1) {
+                                ENCOG_CURRENT_GAME_DONE(true);
+                                //CURRENTLY_PLAYING = true;
+                            }
+                            //else {
+                            //    if (!CURRENTLY_PLAYING) {
+                            //        ENCOG_CURRENT_GAME_DONE(true);
+                            //    }
+                            //}
+
+                            //PLAY_TRIGGER(repo3.GenerateGUID());
+                        }
+
+                        var output = eval("(" + msg.payloadString + ")");
+
+                        var score = output.Score;
+                        var settings = output.Settings;
+
+                        $.each(output.SimulatedDays, function (index_day, value_day) {
+
+                            var dayNum = value_day.Day;
+                            var playerDetails = value_day.PlayerDetails;
+
+                            self.PlayerDetails([]);
+                            $.each(playerDetails, function (index_player, value_player) {
+
+                                var player = new PlayerVM(value_player.Name,
+                                    value_player.Inventory ? value_player.Inventory : 0,
+                                    value_player.Expected ? value_player.Expected : 0,
+                                    value_player.Shipped ? value_player.Shipped : 0,
+                                    value_player.Ordered ? value_player.Ordered : 0,
+                                    value_player.StorageCost ? value_player.StorageCost : 0,
+                                    value_player.BacklogCost? value_player.BacklogCost : 0);
+
+                                player.Session(self.CurrentSession() + 1);
+
+                                self.PlayerDetails.push(player);
+                            });
+
+                            resultsList.push({ Distribution: ko.observable(new DistributionVM()), Results: self.PlayerDetails() });
+
                         });
 
-                        resultsList.push({ Distribution: ko.observable(new DistributionVM()), Results: self.PlayerDetails() });
-
-                    });
 
 
+                        self.Logistics.push({ Done: ko.observable(false), Session: SESSION_COUNTER, PlayerDetails: resultsList, Score: score, Settings: settings });
+                        resultsList = [];
 
-                    self.Logistics.push({ Done: ko.observable(false), Session: SESSION_COUNTER, PlayerDetails: resultsList, Score: score, Settings: settings });
-                    resultsList = [];
+                        if (!IS_HEAD_TO_HEAD) {
+                            self.StartGame(self.StartGame() ? false : true);
+                        }
 
-                    self.StartPlay(self.StartPlay() ? false : true);
+                        break;
+                }
+            };
 
-                    break;
-            }
-        };
+            logisticSettings.HiddenLayerNeurons(self.HiddenLayerNeurons());
+            logisticSettings.TrainingMethodType(self.TrainingMethodType());
+            logisticSettings.Cycles(self.Cycles());
+            logisticSettings.StartTemp(self.StartTemp());
+            logisticSettings.StopTemp(self.StopTemp());
+            logisticSettings.PopulationSize(self.PopulationSize());
+            logisticSettings.Epochs(self.Epochs());
+            logisticSettings.MinRandom(self.MinRandom());
+            logisticSettings.MaxRandom(self.MaxRandom());
+            logisticSettings.LearnRate(self.LearnRate());
+            logisticSettings.Momentum(self.Momentum());
 
-        logisticSettings.HiddenLayerNeurons(self.HiddenLayerNeurons());
-        logisticSettings.TrainingMethodType(self.TrainingMethodType());
-        logisticSettings.Cycles(self.Cycles());
-        logisticSettings.StartTemp(self.StartTemp());
-        logisticSettings.StopTemp(self.StopTemp());
-        logisticSettings.PopulationSize(self.PopulationSize());
-        logisticSettings.Epochs(self.Epochs());
-        logisticSettings.MinRandom(self.MinRandom());
-        logisticSettings.MaxRandom(self.MaxRandom());
-        logisticSettings.LearnRate(self.LearnRate());
-        logisticSettings.Momentum(self.Momentum());
-
-        var neuronInputs = $.map(self.HiddenLayerNeuronsInputs(), function (neuron, i) {
-            return neuron.NeuronCount();
-        });
-
-        logisticSettings.HiddenLayerNeuronsInputs(neuronInputs);
-
-        var settings = logisticSettings;
-
-        repo.PlayLogisticSimulatorEncog(userToken, self.NumberOfSessions(), settings).done(function (res) {
-
-            disableSettingsControls(true);
-            self.Done(false);
-
-            self.CurrentStatus("Waiting...");
-
-            drawGame.UpdateSummaryDetails(self.Canvas(), {
-                CurrentStatus: self.CurrentStatus(),
-                CurrentSession: self.CurrentSession(),
-                CurrentSessionScore: self.CurrentSessionScore()
+            var neuronInputs = $.map(self.HiddenLayerNeuronsInputs(), function (neuron, i) {
+                return neuron.NeuronCount();
             });
 
-        });
+            logisticSettings.HiddenLayerNeuronsInputs(neuronInputs);
+
+            var settings = logisticSettings;
+
+            repo.PlayLogisticSimulatorEncog(userToken, self.NumberOfSessions(), settings).done(function (res) {
+
+                disableSettingsControls(true);
+                self.Done(false);
+
+                self.CurrentStatus("Waiting...");
+
+                drawGame.UpdateSummaryDetails(self.Canvas(), {
+                    CurrentStatus: self.CurrentStatus(),
+                    CurrentSession: self.CurrentSession(),
+                    CurrentSessionScore: self.CurrentSessionScore(),
+
+                    StorageCostPerDay: "$"+ LOGISTIC_SETTINGS.StorageCostPerDay(),
+                    BacklogCostPerDay: "$"+ LOGISTIC_SETTINGS.BacklogCostPerDay()
+                });
+
+            });
+        } catch (exception) {
+            console.log(exception);
+        }
 
     };
 
