@@ -1,4 +1,4 @@
-﻿var PAPER_IMG;
+var PAPER_IMG;
 var TRUCK_IMG;
 var ORDER_IMG;
 
@@ -13,8 +13,6 @@ function MainVM() {
 
     var self = this;
     var USER_TOKEN;
-    var USER_TOKEN_TF;
-    var USER_TOKEN_ENCOG;
     var NO_OF_DAYS_INTERVAL = 0;
 
     // double window toggle trigger for head to thead
@@ -390,7 +388,12 @@ function MainVM() {
         var def = $.Deferred();
 
         self.useAIbleSimulator().GetToken().done(function (token_res) {
+
+            USEAIBLE_USER_TOKEN = token_res;
+
             USER_TOKEN = token_res;
+
+
             self.useAIbleSimulatorInit();
 
 
@@ -440,13 +443,27 @@ function MainVM() {
     self.useAIbleDonePlaying = ko.observable(true);
     self.TensorflowDonePlaying = ko.observable(true);
     self.EncogDonePlaying = ko.observable(true);
+
+    self.useAIbleCurrentGameDonePlaying = ko.observable(false);
+    self.TensorFlowCurrentGameDonePlaying = ko.observable(false);
+    self.EncogCurrentGameDonePlaying = ko.observable(false);
+
+    self.useAIbleCurrentSession = ko.observable();
+    self.TensorFlowCurrentSession = ko.observable();
+    self.EncogCurrentSession = ko.observable();
+
     self.IsLogistic = ko.observable(true);
+
+    self.PlayTrigger = ko.observable();
+
+    self.SessionToPlay = ko.observable(0);
 
     self.PlayGame = function () {
 
         NO_OF_DAYS_INTERVAL = eval(self.useAIbleSimulator().SelectedSpeedOption().Id / 1000);
 
         var player = self.useAIbleSimulator().SelectedPlayerOption().Name;
+        self.SessionToPlay(0);
 
         if (player == 'Human') {
 
@@ -474,8 +491,11 @@ function MainVM() {
                 self.useAIbleShowChartBtn(false);
                 self.TensorFlowShowChartBtn(false);
 
-                playUseAIble(self.TensorflowDonePlaying);
-                playTensorflow(self.useAIbleDonePlaying);
+                self.useAIbleCurrentSession(0);
+                self.TensorFlowCurrentSession(0);
+
+                playUseAIble(self.TensorflowDonePlaying, self.TensorFlowCurrentGameDonePlaying, self.useAIbleCurrentGameDonePlaying, self.useAIbleCurrentSession, self.PlayTrigger);
+                playTensorflow(self.useAIbleDonePlaying, self.useAIbleCurrentGameDonePlaying, self.TensorFlowCurrentGameDonePlaying, self.TensorFlowCurrentSession, self.PlayTrigger);
 
                 minimizeSettings();
 
@@ -486,15 +506,18 @@ function MainVM() {
                 self.useAIbleShowChartBtn(false);
                 self.EncogShowChartBtn(false);
 
-                playUseAIble(self.EncogDonePlaying);
-                playEncog(self.useAIbleDonePlaying);
+                self.useAIbleCurrentSession(0);
+                self.EncogCurrentSession(0);
+
+                playUseAIble(self.EncogDonePlaying, self.EncogCurrentGameDonePlaying, self.useAIbleCurrentGameDonePlaying, self.useAIbleCurrentSession, self.PlayTrigger);
+                playEncog(self.useAIbleDonePlaying, self.useAIbleCurrentGameDonePlaying, self.EncogCurrentGameDonePlaying, self.EncogCurrentSession, self.PlayTrigger);
 
                 minimizeSettings();
             }
         }
     };
 
-    var playUseAIble = function (player2) {
+    var playUseAIble = function (player2, player2CurrentGameDonePlaying, useAIbleCurrentGameDonePlaying, currentSession, trigger) {
 
         self.useAIbleSimulator().SessionScores([]);
         self.useAIbleSimulator().Day("");
@@ -524,11 +547,12 @@ function MainVM() {
             MoveWholeSalerToRetailer: self.MoveWholeSalerToRetailer
         };
 
-        self.useAIbleSimulator().Play(USER_TOKEN, updatePlayerDetails, moveBeer, player2, self.SessionData, self.ShowComparisonChart);
+        self.useAIbleSimulator().Play(USER_TOKEN, updatePlayerDetails, moveBeer, player2, self.SessionData, self.ShowComparisonChart, self.useAIbleDonePlaying, self.useAIbleShowChartBtn,
+            player2CurrentGameDonePlaying, useAIbleCurrentGameDonePlaying, currentSession, trigger);
 
     };
 
-    var playTensorflow = function (useAIble) {
+    var playTensorflow = function (useAIble, useAIbleCurrentGameDonePlaying, tensorflowCurrentGameDonePlaying, currentSession, trigger) {
 
         self.TensorFlowSimulator().SessionScores([]);
         self.TensorFlowSimulator().Day("");
@@ -557,10 +581,12 @@ function MainVM() {
             MoveWholeSalerToRetailer: self.MoveWholeSalerToRetailer
         };
 
-        self.TensorFlowSimulator().Play(USER_TOKEN_TF, self.useAIbleSimulator().NumberOfSessions(), self.useAIbleSimulator().LogisticSettings(), updatePlayerDetails , moveBeer, self.useAIbleSimulator().SelectedSpeedOption, useAIble, self.SessionData, self.ShowComparisonChart, self.TensorflowDonePlaying, self.TensorFlowShowChartBtn);
+        self.TensorFlowSimulator().Play(USER_TOKEN_TF, self.useAIbleSimulator().NumberOfSessions(), self.useAIbleSimulator().LogisticSettings(), updatePlayerDetails, moveBeer,
+            self.useAIbleSimulator().SelectedSpeedOption, useAIble, self.SessionData, self.ShowComparisonChart, self.TensorflowDonePlaying, self.TensorFlowShowChartBtn,
+            useAIbleCurrentGameDonePlaying, tensorflowCurrentGameDonePlaying, currentSession, trigger);
     };
 
-    var playEncog = function (useAIble) {
+    var playEncog = function (useAIble, useAIbleCurrentGameDonePlaying, encogCurrentGameDonePlaying, currentSession, trigger) {
 
         self.EncogSimulator().SessionScores([]);
         self.EncogSimulator().Day("");
@@ -589,7 +615,8 @@ function MainVM() {
             MoveWholeSalerToRetailer: self.MoveWholeSalerToRetailer
         };
 
-        self.EncogSimulator().Play(USER_TOKEN, self.useAIbleSimulator().NumberOfSessions(), self.useAIbleSimulator().LogisticSettings(), updatePlayerDetails, moveBeer, self.useAIbleSimulator().SelectedSpeedOption, useAIble, self.SessionData, self.ShowComparisonChart, self.EncogDonePlaying, self.EncogShowChartBtn);
+        self.EncogSimulator().Play(USER_TOKEN, self.useAIbleSimulator().NumberOfSessions(), self.useAIbleSimulator().LogisticSettings(), updatePlayerDetails, moveBeer, self.useAIbleSimulator().SelectedSpeedOption,
+            useAIble, self.SessionData, self.ShowComparisonChart, self.EncogDonePlaying, self.EncogShowChartBtn, useAIbleCurrentGameDonePlaying, encogCurrentGameDonePlaying, currentSession, trigger);
     };
 
     // Load Multiple Images
@@ -629,7 +656,10 @@ function MainVM() {
 
     self.UpdatePlayerDetails = function (canvas, papersCacheVars, DAY_PAPER, details, data) {
 
-        canvas.putImageData(DAY_PAPER, 0, 0);
+        var dayImgX = 300;
+        var dayImgY = 72;
+
+        canvas.putImageData(DAY_PAPER, dayImgX, dayImgY);
 
         $.each(details, function (index, player) {
 
@@ -776,27 +806,39 @@ function MainVM() {
 
     self.SummaryDetails = function (canvas, summary) {
 
-        clearRect(canvas, 740, 10, 250, 150);
+        try{
+            clearRect(canvas, 740, 10, 250, 150);
 
-        canvas.fillStyle = "rgba(255,255,255,0.60)";
-        canvas.fillRect(740, 10, 250, 150);
-        canvas.fillStyle = "black";
-        canvas.font = "25px Arial";
-        canvas.fillText("Summary", 800, 35);
-        canvas.fillStyle = "rgb(0, 106, 149)";
-        canvas.font = "15px Arial";
+            canvas.fillStyle = "rgba(255,255,255,0.60)";
+            canvas.fillRect(740, 10, 250, 150);
+            canvas.fillStyle = "black";
+            canvas.font = "25px Arial";
+            canvas.fillText("Summary", 800, 35);
+            canvas.fillStyle = "rgb(0, 106, 149)";
+            canvas.font = "15px Arial";
 
-        //ctx.fillText("Status:  " + self.useAIbleSimulator().CurrentStatus(), 745, 60);
-        //ctx.fillText("Session:  " + eval(self.useAIbleSimulator().CurrentSession() + 1), 745, 80);
-        //ctx.fillText("Storage cost per day:  " + "$0.5", 745, 100);
-        //ctx.fillText("Backlog cost per day:  " + "$1.0", 745, 120);
-        //ctx.fillText("Last Session Score:   " + self.useAIbleSimulator().CurrentSessionScore(), 745, 140);
+            //ctx.fillText("Status:  " + self.useAIbleSimulator().CurrentStatus(), 745, 60);
+            //ctx.fillText("Session:  " + eval(self.useAIbleSimulator().CurrentSession() + 1), 745, 80);
+            //ctx.fillText("Storage cost per day:  " + "$0.5", 745, 100);
+            //ctx.fillText("Backlog cost per day:  " + "$1.0", 745, 120);
+            //ctx.fillText("Last Session Score:   " + self.useAIbleSimulator().CurrentSessionScore(), 745, 140);
 
-        canvas.fillText("Status:  " + summary.CurrentStatus, 745, 60);
-        canvas.fillText("Session:  " + eval(summary.CurrentSession + 1), 745, 80);
-        canvas.fillText("Storage cost per day:  " + "$0.5", 745, 100);
-        canvas.fillText("Backlog cost per day:  " + "$1.0", 745, 120);
-        canvas.fillText("Last Session Score:   " + summary.CurrentSessionScore, 745, 140);
+            canvas.fillText("Status:  " + summary.CurrentStatus, 745, 60);
+
+            if (summary.CurrentSession == 0) {
+                canvas.fillText("Session:  1", 745, 80);
+            } else if (summary.CurrentSession > 0) {
+                canvas.fillText("Session:  " + eval(summary.CurrentSession), 745, 80);
+            }
+            else {
+                canvas.fillText("Session:  ", 745, 80);
+            }
+            canvas.fillText("Storage cost per day:  " + summary.StorageCostPerDay, 745, 100);
+            canvas.fillText("Backlog cost per day:  " + summary.BacklogCostPerDay, 745, 120);
+            canvas.fillText("Last Session Score:   " + summary.CurrentSessionScore, 745, 140);
+        } catch (eexx) {
+            console.log(eexx.message);
+        }
 
     };
 
@@ -863,21 +905,28 @@ function MainVM() {
         canvas.fillStyle = "rgb(0, 106, 149)";
         canvas.font = "15px Arial";
         canvas.fillText("Status:  " + self.useAIbleSimulator().CurrentStatus(), 745, 60);
-        canvas.fillText("Session:  " + eval(self.useAIbleSimulator().CurrentSession() + 1), 745, 80);
+        canvas.fillText("Session:  " + eval(self.useAIbleSimulator().CurrentSession()), 745, 80);
         canvas.fillText("Storage cost per day:  " + "$0.5", 745, 100);
         canvas.fillText("Backlog cost per day:  " + "$1.0", 745, 120);
         canvas.fillText("Last Session Score:   " + self.useAIbleSimulator().CurrentSessionScore(), 745, 140);
 
 
         // day image
-        canvas.drawImage(PAPER_IMG, 0, 0, 180, 100);
-        cacheImagesStorageVars.DAY_PAPER_CACHE(canvas.getImageData(0, 0, 180, 100));
+        canvas.globalAlpha = 0;
+        var dayImgX = 300;
+        var dayImgY = 72;
+        var dayImgW = 135;
+        var dayImgH = 50;
+
+        canvas.drawImage(PAPER_IMG, dayImgX, dayImgY, dayImgW, dayImgH);
+        cacheImagesStorageVars.DAY_PAPER_CACHE(canvas.getImageData(dayImgX, dayImgY, dayImgW, dayImgH));
+        canvas.globalAlpha = 1;
 
         // transparent image
-        canvas.globalAlpha = 0;
-        canvas.drawImage(PAPER_IMG, 20, 350, 1020, 73);
-        cacheImagesStorageVars.ROAD_PAPER_CACHE(canvas.getImageData(20, 350, 1020, 73));
-        canvas.globalAlpha = 1;
+        //canvas.globalAlpha = 0;
+        //canvas.drawImage(PAPER_IMG, 20, 350, 1020, 73);
+        //cacheImagesStorageVars.ROAD_PAPER_CACHE(canvas.getImageData(20, 350, 1020, 73));
+        //canvas.globalAlpha = 1;
     };
 
     var drawRetailer = function (canvas, player, retailerPaperCache, data) {
@@ -891,9 +940,9 @@ function MainVM() {
 
         var x = 42;
 
-        canvas.font = "40px Handlee";
         
-        canvas.fillText("Day: " + data.Day(), 10, 60);
+        canvas.font = "33px Handlee";
+        canvas.fillText("Day: " + data.Day(), 310, 110);
 
         canvas.font = "35px Handlee";
         canvas.fillText("Retailer", x, 496);
@@ -1082,7 +1131,11 @@ function MainVM() {
     };
 
     var clearRect = function (canvas, x, y, w, h) {
-        canvas.clearRect(x, y, w, h);
+        try{
+            canvas.clearRect(x, y, w, h);
+        } catch (ex) {
+            //console.log(ex.message);
+        }
     };
 
     // charting
@@ -1157,30 +1210,30 @@ function MainVM() {
         { Id: 200, Text: "Per 200 Sessions" }]);
     self.SelectedChartViewOption = ko.observable(self.ChartViewOptions()[3]);
     self.SelectedChartViewOption.subscribe(function (val) {
-        showComparisonChart(self.SessionData());
+        self.ShowComparisonChart(self.SessionData());
     });
 
     self.FromChartPage = ko.observable(0);
     self.ToChartPage = ko.observable(99);
 
+    self.CurrentPage = ko.observable(1);
+
     self.PreviousChartPage = function () {
-        if (self.FromChartPage() > 0) {
-            self.FromChartPage(self.FromChartPage() - 99);
-            self.ToChartPage(self.FromChartPage() + 99);
+
+        if (self.CurrentPage() > 1) {
+            self.CurrentPage(self.CurrentPage() - 1);
         }
 
-        showComparisonChart(self.SessionData());
+        self.ShowComparisonChart(self.SessionData());
     };
 
     self.NextChartPage = function () {
 
-        var sessions = eval($("#sessionInput").val());
-
-        if (self.ToChartPage() < sessions) {
-            self.FromChartPage(self.ToChartPage());
-            self.ToChartPage(self.ToChartPage() + 99);
+        if (self.CurrentPage() < CHART_PAGES_COUNT) {
+            self.CurrentPage(self.CurrentPage() + 1);
         }
-        showComparisonChart(self.SessionData());
+
+        self.ShowComparisonChart(self.SessionData());
     };
 
     self.NUMBER_OF_CHART_POINTS = ko.observable(0);
@@ -1200,6 +1253,10 @@ function MainVM() {
     self.useAIbleShowChartBtn = ko.observable(false);
     self.TensorFlowShowChartBtn = ko.observable(false);
     self.EncogShowChartBtn = ko.observable(false);
+
+    self.useAIbleLogisticLowestCostAtSession = ko.observable();
+    self.TensorFlowLogisticLowestCostAtSession = ko.observable();
+    self.EncogLogisticLowestCostAtSession = ko.observable();
 
     self.ShowChartBtn = ko.computed(function () {
         if (self.useAIbleSimulator().SelectedPlayerOption().Name == 'Head-To-Head') {
@@ -1246,7 +1303,7 @@ function MainVM() {
                 useAIbleScores.push(eval(v.Score.replace('$', '').replace(',', '')));
                 useAIbleSessions.push(v.Session);
 
-            } else if (v.Type() == 'tensorFlow') {
+            } else if (v.Type() == 'tensorflow') {
 
                 tensorFlowScores.push(eval(v.Score.replace('$', '').replace(',', '')));
                 tensorFlowSessions.push(v.Session);
@@ -1294,18 +1351,98 @@ function MainVM() {
 
             EncogAvgScore: self.EncogAvgScore,
             EncogHighestScore: self.EncogHighestScore,
-            EncogLearnedAfter: self.EncogLearnedAfter
+            EncogLearnedAfter: self.EncogLearnedAfter,
+
+            useAIbleLogisticLowestCostAtSession: self.useAIbleLogisticLowestCostAtSession,
+            TensorFlowLogisticLowestCostAtSession: self.TensorFlowLogisticLowestCostAtSession,
+            EncogLogisticLowestCostAtSession: self.EncogLogisticLowestCostAtSession
         };
 
 
         if (self.useAIbleSimulator().SelectedPlayerOption().Name == 'Head-To-Head') {
-            createChart(undefined, chartData, self.SelectedChartViewOption(), self.FromChartPage, self.ToChartPage, summary, self.NUMBER_OF_CHART_POINTS, true);
+            createChart(undefined, chartData, self.SelectedChartViewOption(), self.FromChartPage, self.ToChartPage, summary, self.NUMBER_OF_CHART_POINTS, true, self.CurrentPage);
         } else if (self.useAIbleSimulator().SelectedPlayerOption().Name == 'useAIble') {
-            createChart('useAIble', chartData, self.SelectedChartViewOption(), self.FromChartPage, self.ToChartPage, summary, self.NUMBER_OF_CHART_POINTS, true);
+            createChart('useAIble', chartData, self.SelectedChartViewOption(), self.FromChartPage, self.ToChartPage, summary, self.NUMBER_OF_CHART_POINTS, true, self.CurrentPage);
         } else if (self.useAIbleSimulator().SelectedPlayerOption().Name == 'Tensor Flow') {
-            createChart('tensorFlow', chartData, self.SelectedChartViewOption(), self.FromChartPage, self.ToChartPage, summary, self.NUMBER_OF_CHART_POINTS, true);
+            createChart('tensorFlow', chartData, self.SelectedChartViewOption(), self.FromChartPage, self.ToChartPage, summary, self.NUMBER_OF_CHART_POINTS, true, self.CurrentPage);
         } else if (self.useAIbleSimulator().SelectedPlayerOption().Name == 'Encog') {
-            createChart('encog', chartData, self.SelectedChartViewOption(), self.FromChartPage, self.ToChartPage, summary, self.NUMBER_OF_CHART_POINTS, true);
+            createChart('encog', chartData, self.SelectedChartViewOption(), self.FromChartPage, self.ToChartPage, summary, self.NUMBER_OF_CHART_POINTS, true, self.CurrentPage);
         }
     };
 }
+
+$(window).bind('beforeunload', function () {
+
+    var player = mainVM.useAIbleSimulator().SelectedPlayerOption().Name;
+
+    if (player == 'useAIble') {
+
+        if (!mainVM.useAIbleDonePlaying()) {
+            return ' ';
+        } else {
+            if (client) {
+                client.disconnect();
+            }
+        }
+
+    } else if (player == 'Tensor Flow') {
+
+
+        if (!mainVM.TensorFlowDonePlaying()) {
+            return ' ';
+        } else {
+            if (client2) {
+                client2.disconnect();
+            }
+        }
+
+    } else if (player == 'Encog') {
+
+        if (!mainVM.EncogDonePlaying()) {
+            return ' ';
+        } else {
+            if (client3) {
+                client3.disconnect();
+            }
+        }
+
+    } else if (player == 'Head-To-Head') {
+
+        var h2hPlayer = mainVM.SelectedHeadToHeadOption();
+        if (h2hPlayer) {
+            if (h2hPlayer.Id == 'useAIble-tensorflow') {
+
+                if (!mainVM.useAIbleDonePlaying() || !mainVM.TensorFlowDonePlaying()) {
+                    return ' ';
+                } else {
+
+                    if (client) {
+                        client.disconnect();
+                    }
+
+                    if (client2) {
+                        client2.disconnect();
+                    }
+                }
+
+            } else if (h2hPlayer.Id == 'useAIble-encog') {
+
+
+
+                if (!mainVM.useAIbleDonePlaying() && !mainVM.EncogDonePlaying()) {
+                    return ' ';
+                } else {
+
+                    if (client) {
+                        client.disconnect();
+                    }
+
+                    if (client3) {
+                        client3.disconnect();
+                    }
+                }
+
+            }
+        }
+    }
+});
