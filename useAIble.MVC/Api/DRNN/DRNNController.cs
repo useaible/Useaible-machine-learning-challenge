@@ -1,4 +1,4 @@
-﻿using DRNN;
+using DRNN;
 using DRNN.Contracts;
 using DRNN.Exceptions;
 using DRNN.Models;
@@ -109,7 +109,7 @@ namespace useAIble.MVC.Api.DRNN
         }
 
         [Route("play")]
-        public void PlayLunarLander(string token, string networkName, [FromBody]IEnumerable<RNNCoreSettings> settings, bool learn = true, int sessions = 100, int altitude = 1000, int fuel = 200)
+        public void PlayLunarLander(string token, string networkName, [FromBody]IEnumerable<RNNCoreSettings> settings, bool learn = true, int sessions = 100, int altitude = 5000, int fuel = 100)
         {
             //LunarLander simulator = new LunarLander(token, networkName, learn, sessions, startRandomness, endRandomness, maxLinearBracket, minLinearBracket, true);
             //simulator.ResetSessionCnt();
@@ -159,7 +159,7 @@ namespace useAIble.MVC.Api.DRNN
         }
 
         [Route("playLunarLanderEncog")]
-        public void PlayLunarLanderEncog(string token, string networkName, [FromBody]LunarLanderMetadata_Encog settings, bool learn = true, int sessions = 100, int altitude = 1000, int fuel = 200)
+        public void PlayLunarLanderEncog(string token, string networkName, [FromBody]LunarLanderMetadata_Encog settings, bool learn = true, int sessions = 100, int altitude = 5000, int fuel = 100)
         {
             //LunarLander simulator = new LunarLander(token, networkName, learn, sessions, startRandomness, endRandomness, maxLinearBracket, minLinearBracket, true);
             //simulator.ResetSessionCnt();
