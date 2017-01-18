@@ -1,4 +1,4 @@
-﻿function TensorFlowClient(sim, runGame, gameVM, resetGame, currentSession, sessionWaitText, settings, enableStartButton, donePlaying, sessionWaitTextTF, waitTimeElapseTF, tensorFlowShowChart) {
+function TensorFlowClient(sim, runGame, gameVM, resetGame, currentSession, sessionWaitText, settings, enableStartButton, donePlaying, sessionWaitTextTF, waitTimeElapseTF, tensorFlowShowChart, updateGameStatus) {
 
     var self = this;
     var sessions = {
@@ -49,6 +49,39 @@
         });
     };
 
+    var disableSettingsControls = function (disabled) {
+
+        $('#sessionInput').prop('disabled', disabled);
+        $('#sessionRandomnessInput').prop('disabled', disabled);
+
+        $('#RandomnessInput').prop('disabled', disabled);
+        $('#RandomnessInput2').prop('disabled', disabled);
+        $('#add-settings-btn').prop('disabled', disabled);
+
+        //$('#speed-option-dropdown').prop('disabled', disabled);
+
+        if (disabled) {
+            $('#play-lander-btn').hide();
+            $('#sessionRandomnessSlider').slider('disable');
+            $('#RandomnessSlider').slider('disable');
+            $('#sessionSlider').slider('disable');
+
+            tensorFlowShowChart(false);
+
+        } else {
+
+            $('#play-lander-btn').show();
+            $('#sessionRandomnessSlider').slider('enable');
+            $('#RandomnessSlider').slider('enable');
+            $('#sessionSlider').slider('enable');
+
+            tensorFlowShowChart(true);
+        }
+
+    };
+
+    var CURR_SESSION_COUNTER = 0;
+
     self.StartGame.subscribe(function (val) {
 
         if (self.StartNewGame() && self.SessionDone()) {
@@ -56,17 +89,43 @@
             var newGame;
             if (self.GameQueue().length > 0) {
                 $.each(self.GameQueue(), function (game_index, game_data) {
-                    if (!game_data.Done() && (game_index % 100) == 0) {
+                    //if (!game_data.Done() && (game_index % 100) == 0) {
 
+                    var allowPlay = !game_data.Done() && game_data.Data;
+
+                    if (allowPlay) {
+
+                        CURRENTLY_PLAYING = true;
+
+                        if (IS_HEAD_TO_HEAD) {
+                            if (TENSORFLOW_CURRENT_GAME_DONE) {
+                                TENSORFLOW_CURRENT_GAME_DONE(false);
+                            }
+                        }
+
+                        gameVM.gameStatus("Playing session " + game_data.Session);
+
+                        STARTED = true;
+                        zzz = 0;
+                        clearInterval(elapseInterval);
+
+                        gameVM.timeElapse("");
+                        updateGameStatus(gameVM);
+
+                        game_data.Playing(true);
+
+                        CURR_SESSION_COUNTER ++;
                         var gameCounter = 0;
 
                         self.SessionDone(false);
                         self.StartNewGame(false);
 
-                        currentSession(game_data.Session + "-" + (game_data.Session + 99));
+                        currentSession(game_data.Session);
 
                         var results = game_data.Data;
                         var outputLen = results.length;
+
+                        sim.gameQueue.push(game_data);
 
                         var start = function () {
 
@@ -80,44 +139,123 @@
 
                                 gameCounter++;
 
+                                if (sim.fuel() == 0 && sim.altitude() == 0) {
+                                    gameCounter = outputLen;
+                                    console.log("Jumping ahead... crushed na!");
+                                }
+
                                 if (gameCounter < outputLen) {
 
-                                    $.each(self.GameQueue(), function (ii, vv) {
-                                        if (vv.Type() == 'tensorFlow') {
-                                            if (vv.Session <= game_data.Session + 99) {
-                                                vv.Playing(true);
-                                            }
-                                        }
-                                    });
+                                    //$.each(self.GameQueue(), function (ii, vv) {
+                                    //    if (vv.Type() == 'tensorflow') {
+                                    //        if (vv.Session <= game_data.Session + 99) {
+                                    //            vv.Playing(true);
+                                    //        }
+                                    //    }
+                                    //});
 
                                     start();
                                 }
-                                else if (gameCounter == outputLen) {
+                                else {
 
-                                    $.each(self.GameQueue(), function (ii, vv) {
-                                        if (vv.Type() == 'tensorFlow') {
-                                            if (vv.Session <= game_data.Session + 99) {
-                                                vv.Playing(false);
-                                                vv.Done(true);
-                                            }
-                                        }
+                                    CURRENTLY_PLAYING = false;
+
+                                    game_data.Playing(false);
+                                    game_data.Done(true);
+
+                                    sim.sessionScores.push({
+                                        Id: game_data.Session, Score: game_data.Score
                                     });
+
+                                    if (IS_HEAD_TO_HEAD) {
+                                        TENSORFLOW_CURRENT_GAME_DONE(true);
+                                    }
+
+                                    //$.each(self.GameQueue(), function (ii, vv) {
+                                    //    if (vv.Type() == 'tensorflow') {
+                                    //        if (vv.Session <= game_data.Session + 99) {
+                                    //            vv.Playing(false);
+                                    //            vv.Done(true);
+                                    //        }
+                                    //    }
+                                    //});
+
+                                    //if (game_data.Session + 99 >= totalSessions) {
+                                    if (game_data.Session == totalSessions) {
+
+                                        DONE_PLAYING(true);
+
+                                        if (USEAIBLE_DONE_PLAYING) {
+                                            if (USEAIBLE_DONE_PLAYING()) {
+                                                $(".view-chart").show();
+                                                disableSettingsControls(false);
+                                            }
+                                        } else {
+                                            //donePlaying(true);
+                                            $(".view-chart").show();
+                                            disableSettingsControls(false);
+                                        }
+
+                                        //$.each(self.GameQueue(), function (ii, vv) {
+                                        //    if (vv.Type() == 'tensorflow') {
+                                        //        vv.Playing(false);
+                                        //        vv.Done(true);
+                                        //    }
+                                        //});
+
+                                        gameVM.gameStatus("Done");
+                                        //gameVM.nextSession("Done");
+                                        gameVM.timeElapse("");
+
+                                        updateGameStatus(gameVM);
+                                    } else {
+
+                                        var hasUnfinished = false;
+                                        $.each(self.GameQueue(), function (ii, vv) {
+                                            if (vv.Type() == 'tensorflow') {
+                                                if (!vv.Done()) {
+                                                    hasUnfinished = true;
+                                                    return false;
+                                                }
+                                            }
+                                        });
+
+                                        if (hasUnfinished) {
+                                            //gameVM.gameStatus("Ready session "+ eval(game_data.Session + 1));
+                                            gameVM.gameStatus("Loading data...");
+                                            //gameVM.nextSession("Done");
+                                            gameVM.timeElapse("");
+
+                                            updateGameStatus(gameVM);
+
+                                            STARTED = true;
+                                            zzz = 0;
+                                            clearInterval(elapseInterval);
+
+                                        } else {
+
+                                            gameVM.gameStatus("Loading data...");
+                                            //updateGameStatus(gameVM);
+
+                                            STARTED = false;
+                                            zzz = 0;
+                                            clearInterval(elapseInterval);
+                                            elapseInterval = setInterval(updateTimeElapse, 1000);
+
+                                            if (IS_HEAD_TO_HEAD) {
+                                                TENSORFLOW_CURRENT_GAME_DONE(false);
+                                            }
+
+                                        }
+                                    }
 
                                     self.SessionDone(true);
                                     self.StartNewGame(true);
 
                                     resetGame(gameVM);
 
-                                    self.StartGame(self.StartGame() ? false : true);
-
-                                    if (game_data.Session + 99 >= totalSessions) {
-                                        donePlaying(true);
-                                        $.each(self.GameQueue(), function (ii, vv) {
-                                            if (vv.Type() == 'tensorFlow') {
-                                                vv.Playing(false);
-                                                vv.Done(true);
-                                            }
-                                        });
+                                    if (!IS_HEAD_TO_HEAD) {
+                                        self.StartGame(self.StartGame() ? false : true);
                                     }
                                 }
 
@@ -130,11 +268,12 @@
                     }
                 });
 
-            } else {
-                self.SessionDone(true);
-                self.StartNewGame(true);
-                self.StartGame(self.StartGame() ? false : true);
             }
+            //else {
+            //    self.SessionDone(true);
+            //    self.StartNewGame(true);
+            //    self.StartGame(self.StartGame() ? false : true);
+            //}
         }
     });
 
@@ -153,7 +292,28 @@
     //self.Thrust = ko.observable(false);
     //self.Reset = ko.observable(false);
 
-    self.Init = function () {
+    var USEAIBLE_DONE_PLAYING;
+    var DONE_PLAYING;
+
+    var USEAIBLE_CURRENT_GAME_DONE;
+    var TENSORFLOW_CURRENT_GAME_DONE;
+
+    var IS_HEAD_TO_HEAD = false;
+    var CURRENTLY_PLAYING = false;
+
+    self.Init = function (useAIbleDonePlaying, donePlaying, useAIbleCurrentGameDonePlaying, tensorflowCurrentGameDonePlaying, newGameTrigger, useAIbleStarted, tensorflowStarted) {
+
+        USEAIBLE_DONE_PLAYING = useAIbleDonePlaying;
+        DONE_PLAYING = donePlaying;
+
+        USEAIBLE_CURRENT_GAME_DONE = useAIbleCurrentGameDonePlaying;
+        TENSORFLOW_CURRENT_GAME_DONE = tensorflowCurrentGameDonePlaying;
+
+        if (TENSORFLOW_CURRENT_GAME_DONE) {
+            TENSORFLOW_CURRENT_GAME_DONE(false);
+        }
+
+        IS_HEAD_TO_HEAD = USEAIBLE_CURRENT_GAME_DONE ? true : false;
 
         client = new Paho.MQTT.Client("invirmq.southeastasia.cloudapp.azure.com", 15675, "/ws", settings.UserToken);
 
@@ -167,8 +327,25 @@
 
     self.StartSession = function () {
 
+        //sim.gameQueue([]);
+        //self.GameQueue([]);
+
+        $(".view-chart").hide();
+
         $("#tensorFlowWaitingDiv").show();
         $("#mainWaitingDiv").show();
+
+        gameVM.currentPlayer("Tensor Flow");
+        gameVM.gameStatus("Loading data...");
+        //gameVM.nextSession("Number Of Sessons: Waiting...");
+
+        updateGameStatus(gameVM);
+
+        STARTED = false;
+        zzz = 0;
+        elapseInterval = setInterval(updateTimeElapse, 1000);
+
+        disableSettingsControls(true);
 
         //todo: pass the initial altitude and fuel
         var data = {}
@@ -278,13 +455,23 @@
 
             sessionCounter++;
 
+            if (IS_HEAD_TO_HEAD) {
+                if (sessionCounter == 1) {
+                    TENSORFLOW_CURRENT_GAME_DONE(true);
+                } else {
+                    if (!CURRENTLY_PLAYING) {
+                        TENSORFLOW_CURRENT_GAME_DONE(true);
+                    }
+                }
+            }
+
             var gameObj = {
                 Session: output.session,
                 Done: ko.observable(false),
                 Playing: ko.observable(false),
                 Data: output.data,
                 Score: output.score,
-                Type: ko.observable('tensorFlow')
+                Type: ko.observable('tensorflow')
             };
 
             gameObj.Icon = ko.computed(function () {
@@ -296,27 +483,51 @@
                     return '<i class="fa fa-hourglass-half" aria-hidden="true"></i>';
                 }
             });
-            sim.sessionScores.push({
-                Id: output.session, Score: output.score
-            });
+            //sim.sessionScores.push({
+            //    Id: output.session, Score: output.score
+            //});
             self.GameQueue.push(gameObj);
 
-            sim.gameQueue(self.GameQueue());
+            //sim.gameQueue(self.GameQueue());
 
-            self.StartGame(self.StartGame() ? false : true);
+            var counter = sessionCounter < totalSessions? sessionCounter + 1 : sessionCounter;
+            sessionWaitText("Waiting results for session # " + counter + "");
+            sessionWaitTextTF("Waiting results for session # " + counter + "");
 
+            //if ((sessionCounter % 100) == 0) {
             if (sessionCounter < totalSessions) {
-                var counter = sessionCounter + 1;
-                sessionWaitText("Waiting results for session # " + counter + "");
-                sessionWaitTextTF("Waiting results for session # " + counter + "");
-            } else {
-                sessionWaitText("");
-                sessionWaitTextTF("");
-                $("#tensorFlowWaitingDiv").hide();
-                $("#mainWaitingDiv").hide();
 
-                tensorFlowShowChart(true);
+                //gameVM.nextSession("Number Of Sessions: " + eval(sessionCounter + 1));
+
+                updateGameStatus(gameVM);
+
+                if (!IS_HEAD_TO_HEAD) {
+                    self.StartGame(self.StartGame() ? false : true);
+                }
+
             }
+            //else if (sessionCounter == totalSessions) {
+            //    sessionWaitText("");
+            //    sessionWaitTextTF("");
+            //    $("#tensorFlowWaitingDiv").hide();
+            //    $("#mainWaitingDiv").hide();
+
+            //    tensorFlowShowChart(true);
+            //    $(".view-chart").show();
+
+            //    $.each(self.GameQueue(), function (ii, vv) {
+            //        if (vv.Type() == 'tensorflow') {
+            //            vv.Playing(false);
+            //            vv.Done(true);
+            //        }
+            //    });
+
+            //    gameVM.gameStatus("Done");
+            //    //gameVM.nextSession("Done");
+            //    gameVM.timeElapse("");
+
+            //    updateGameStatus(gameVM);
+            //}
         }
         //var dataReceive = eval("(" + message.payloadString + ")");
 
@@ -404,8 +615,18 @@
 
     var onConnectionLost = function (responseObject) {
         if (responseObject.errorCode !== 0) {
-            donePlaying(true);
+            //donePlaying(true);
             console.log("onConnectionLost:" + responseObject.errorMessage);
+        }
+
+        if (!DONE_PLAYING() == true) {
+
+            gameVM.gameStatus("Loading data...");
+
+            STARTED = false;
+            zzz = 0;
+            clearInterval(elapseInterval);
+            elapseInterval = setInterval(updateTimeElapse, 1000);
         }
     };
 
@@ -428,5 +649,34 @@
 
     //    return retVal;
     //};
+
+    var STARTED = false;
+    var elapseInterval;
+    var zzz = 0;
+    var updateTimeElapse = function () {
+
+        zzz++;
+
+        gameVM.timeElapse(toTime(zzz));
+        updateGameStatus(gameVM);
+
+        if (STARTED) {
+            elapseInterval = 0;
+            clearInterval(elapseInterval);
+        }
+
+    };
+
+    var toTime = function (t) {
+        var sec_num = t;//parseInt(this, t); // don't forget the second param
+        var hours = Math.floor(sec_num / 3600);
+        var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+        var seconds = sec_num - (hours * 3600) - (minutes * 60);
+
+        if (hours < 10) { hours = "0" + hours; }
+        if (minutes < 10) { minutes = "0" + minutes; }
+        if (seconds < 10) { seconds = "0" + seconds; }
+        return hours + ':' + minutes + ':' + seconds;
+    };
 }
 
