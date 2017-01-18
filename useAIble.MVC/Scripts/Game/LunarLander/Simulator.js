@@ -1,4 +1,4 @@
-﻿function Simulator(networkName, learn, sessions, startRandomness, endRandomness, maxLinearBracket, minLinearBracket) {
+function Simulator(networkName, learn, sessions, startRandomness, endRandomness, maxLinearBracket, minLinearBracket) {
 
     var self = this;
     var repository = new DRNNRepository();
